@@ -16,13 +16,12 @@ private:
     realtype rho, sigma, nu;
 public:
     Fluid();
+    Fluid(const Fluid &f);
     Fluid(realtype rho, realtype sigma, realtype nu);
 
-    realtype getNu() const;
-
-    realtype getSigma() const;
-
     realtype getRho() const;
+    realtype getSigma() const;
+    realtype getNu() const;
 
     friend std::ostream &operator<<(std::ostream &os, const Fluid &fluid);
 

@@ -14,6 +14,7 @@ private:
     realtype kb1, kb2, kc1, kc2, k1, k2, k3, k4;
 public:
     Constants();
+    Constants(const Constants &c);
     Constants(realtype kb1, realtype kb2, realtype kc1, realtype kc2,
               SystemProperties &s, const Fluid &cont, const Fluid &disp);
 

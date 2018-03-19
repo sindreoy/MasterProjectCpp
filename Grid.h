@@ -38,6 +38,7 @@ private:
      * mu0  :: The integral of the weight function in the domain [-1,1] */
 public:
     Grid();
+    Grid(const Grid &g);
     Grid(size_t N, realtype x0, realtype x1, realtype alpha, realtype beta, realtype mu0);
 
     void coefs(size_t j, realtype *r);
@@ -47,17 +48,17 @@ public:
     void setInterpolatedXis();
 
     size_t getN() const;
+    realtype getX0() const;
+    realtype getX1() const;
+    realtype getAlpha() const;
+    realtype getBeta() const;
+    realtype getMu0() const;
 
     gsl_vector *getXi() const;
-
     gsl_vector *getW() const;
-
     gsl_matrix *getD() const;
-
     gsl_matrix *getXipBB() const;
-
     gsl_matrix *getXipBC() const;
-
     gsl_matrix *getXippBC() const;
 
     friend std::ostream &operator<<(std::ostream &os, const Grid &grid);

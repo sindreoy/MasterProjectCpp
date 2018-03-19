@@ -3,9 +3,12 @@
 //
 
 #include "SystemProperties.h"
-#include <iostream>
 
 SystemProperties::SystemProperties() = default;
+
+SystemProperties::SystemProperties(const SystemProperties &s) :
+        Rm(s.getRm()), Vl(s.getVl()), Vm(s.getVm()), P(s.getP()),
+        tf(s.getTf()), eps(s.getEps()) {}
 
 SystemProperties::SystemProperties(
         realtype Rm, realtype Vl, realtype P, realtype tf, const Fluid &disp) :

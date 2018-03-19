@@ -110,6 +110,12 @@
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Kernels.h">
 			<Option target="MasterProjectCpp"/>
 		</Unit>
+		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.cpp">
+			<Option target="MasterProjectCpp"/>
+		</Unit>
+		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.h">
+			<Option target="MasterProjectCpp"/>
+		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.cpp">
 			<Option target="MasterProjectCpp"/>
 		</Unit>
@@ -120,12 +126,6 @@
 			<Option target="MasterProjectCpp"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/main.cpp">
-			<Option target="MasterProjectCpp"/>
-		</Unit>
-		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/utilities.cpp">
-			<Option target="MasterProjectCpp"/>
-		</Unit>
-		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/utilities.h">
 			<Option target="MasterProjectCpp"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/CMakeLists.txt">

@@ -19,7 +19,7 @@ private:
     realtype Rm, Vl, Vm, P, tf, eps;
 public:
     SystemProperties();
-
+    SystemProperties(const SystemProperties &s);
     SystemProperties(
             realtype Rm, realtype Vl, realtype P, realtype tf, const Fluid &disp);
 

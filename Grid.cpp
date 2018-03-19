@@ -7,6 +7,25 @@
 
 Grid::Grid() = default;
 
+Grid::Grid(const Grid &g):N(g.getN()), x0(g.getX0()), x1(g.getX1()), alpha(g.getAlpha()),
+                          beta(g.getBeta()), mu0(g.getMu0()),
+                          xi(gsl_vector_alloc(g.getN())),
+                          w(gsl_vector_alloc(g.getN())),
+                          D(gsl_matrix_alloc(g.getN(), g.getN())),
+                          xipBB(gsl_matrix_alloc(g.getN(), g.getN())),
+                          xipBC(gsl_matrix_alloc(g.getN(), g.getN())),
+                          xippBC(gsl_matrix_alloc(g.getN(), g.getN()))
+{
+    /* Memory has been allocated, copy values (not pointers) */
+    gsl_vector_memcpy(this->xi, g.getXi());
+    gsl_vector_memcpy(this->w, g.getW());
+    gsl_matrix_memcpy(this->D, g.getD());
+    gsl_matrix_memcpy(this->xipBB, g.getXipBB());
+    gsl_matrix_memcpy(this->xipBC, g.getXipBC());
+    gsl_matrix_memcpy(this->xippBC, g.getXippBC());
+
+}
+
 Grid::Grid(size_t N, realtype x0, realtype x1, realtype alpha, realtype beta, realtype mu0)
         : N(N), x0(x0), x1(x1), alpha(alpha), beta(beta), mu0(mu0) {
     this->w = gsl_vector_alloc(N);
@@ -93,7 +112,7 @@ void Grid::setQuadratureRule() {
     realtype etaP, muP;     /* Last values of vectors eta and mu                */
     realtype r1[3] = {0};   /* Holds coefficients from coefs function           */
     realtype r2[3] = {0};   /* Holds coefficients from coefs function           */
-    realtype tmp, tmp2;     /* Temporary variable                               */
+    realtype tmp;           /* Temporary variable                               */
 
     /* Allocate memory for all needed matrices and vectors */
     J       = gsl_matrix_calloc(N-1, N-1);
@@ -263,7 +282,6 @@ void Grid::setLagrangeDerivativeMatrix(){
     }
 }
 
-
 void Grid::setInterpolatedXis(){
     size_t i, j;
     realtype ai, bj, tmp;
@@ -284,6 +302,26 @@ void Grid::setInterpolatedXis(){
 
 size_t Grid::getN() const {
     return N;
+}
+
+realtype Grid::getX0() const {
+    return x0;
+}
+
+realtype Grid::getX1() const {
+    return x1;
+}
+
+realtype Grid::getAlpha() const {
+    return alpha;
+}
+
+realtype Grid::getBeta() const {
+    return beta;
+}
+
+realtype Grid::getMu0() const {
+    return mu0;
 }
 
 gsl_vector *Grid::getXi() const {
@@ -365,4 +403,5 @@ Grid::~Grid(){
     gsl_matrix_free(this->xipBB);
     gsl_matrix_free(this->xipBC);
     gsl_matrix_free(this->xippBC);
+    std::cout << "Destroying grid" << std::endl;
 }

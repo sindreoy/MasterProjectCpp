@@ -158,28 +158,28 @@ CMakeFiles/MasterProjectCpp.dir/Kernels.cpp.o
  /Users/sindre/GSL/instdir/include/gsl/gsl_vector_uint.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_vector_ulong.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_vector_ushort.h
-CMakeFiles/MasterProjectCpp.dir/SystemProperties.cpp.o
- /Users/Sindre/Sundials/instdir/include/sundials/sundials_config.h
- /Users/Sindre/Sundials/instdir/include/sundials/sundials_math.h
- /Users/Sindre/Sundials/instdir/include/sundials/sundials_types.h
- /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.h
- /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.cpp
- /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h
-CMakeFiles/MasterProjectCpp.dir/main.cpp.o
+CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o
+ /Users/Sindre/Sundials/instdir/include/cvode/cvode.h
+ /Users/Sindre/Sundials/instdir/include/cvode/cvode_direct.h
  /Users/Sindre/Sundials/instdir/include/nvector/nvector_serial.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_config.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_dense.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_direct.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_iterative.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_linearsolver.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_math.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_matrix.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_nvector.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_types.h
+ /Users/Sindre/Sundials/instdir/include/sunlinsol/sunlinsol_dense.h
  /Users/Sindre/Sundials/instdir/include/sunmatrix/sunmatrix_dense.h
  /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.h
  /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.h
  /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Grid.h
  /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Kernels.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.cpp
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.h
  /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h
- /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/main.cpp
- /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/utilities.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_blas.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_blas_types.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_block_char.h
@@ -244,15 +244,37 @@ CMakeFiles/MasterProjectCpp.dir/main.cpp.o
  /Users/sindre/GSL/instdir/include/gsl/gsl_vector_uint.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_vector_ulong.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_vector_ushort.h
-CMakeFiles/MasterProjectCpp.dir/utilities.cpp.o
+CMakeFiles/MasterProjectCpp.dir/SystemProperties.cpp.o
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_config.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_math.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_types.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.cpp
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h
+CMakeFiles/MasterProjectCpp.dir/main.cpp.o
+ /Users/Sindre/Sundials/instdir/include/cvode/cvode.h
+ /Users/Sindre/Sundials/instdir/include/cvode/cvode_direct.h
  /Users/Sindre/Sundials/instdir/include/nvector/nvector_serial.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_config.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_dense.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_direct.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_iterative.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_linearsolver.h
+ /Users/Sindre/Sundials/instdir/include/sundials/sundials_math.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_matrix.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_nvector.h
  /Users/Sindre/Sundials/instdir/include/sundials/sundials_types.h
+ /Users/Sindre/Sundials/instdir/include/sunlinsol/sunlinsol_dense.h
  /Users/Sindre/Sundials/instdir/include/sunmatrix/sunmatrix_dense.h
- /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/utilities.cpp
- /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/utilities.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Grid.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Kernels.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h
+ /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/main.cpp
+ /Users/sindre/GSL/instdir/include/gsl/gsl_blas.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_blas_types.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_block_char.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_block_complex_double.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_block_complex_float.h
@@ -267,10 +289,15 @@ CMakeFiles/MasterProjectCpp.dir/utilities.cpp.o
  /Users/sindre/GSL/instdir/include/gsl/gsl_block_uint.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_block_ulong.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_block_ushort.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_cblas.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_check_range.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_complex.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_eigen.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_errno.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_inline.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_linalg.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_machine.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_math.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_matrix.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_matrix_char.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_matrix_complex_double.h
@@ -286,6 +313,13 @@ CMakeFiles/MasterProjectCpp.dir/utilities.cpp.o
  /Users/sindre/GSL/instdir/include/gsl/gsl_matrix_uint.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_matrix_ulong.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_matrix_ushort.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_minmax.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_mode.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_nan.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_permutation.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_pow_int.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_precision.h
+ /Users/sindre/GSL/instdir/include/gsl/gsl_sys.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_types.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_vector.h
  /Users/sindre/GSL/instdir/include/gsl/gsl_vector_char.h

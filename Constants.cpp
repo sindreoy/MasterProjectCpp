@@ -6,6 +6,11 @@
 
 Constants::Constants() = default;
 
+Constants::Constants(const Constants &c) : k1(c.getK1()), k2(c.getK2()),
+                                           k3(c.getK3()), k4(c.getK4()),
+                                           kb1(c.getKb1()), kb2(c.getKb2()),
+                                           kc1(c.getKc1()), kc2(c.getKc2()) {}
+
 Constants::Constants(
         realtype kb1, realtype kb2, realtype kc1, realtype kc2,
         SystemProperties &s, const Fluid &cont, const Fluid &disp)

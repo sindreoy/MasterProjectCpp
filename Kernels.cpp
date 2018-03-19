@@ -2,11 +2,26 @@
 // Created by Sindre Bakke Øyen on 07.03.2018.
 //
 
+#include <gsl/gsl_matrix.h>
 #include "Kernels.h"
-#include <iostream>
-#include <gsl/gsl_vector_double.h>
 
 Kernels::Kernels() = default;
+
+Kernels::Kernels(const Kernels &k){
+    size_t N;
+    N = k.getKBB()->size1;
+
+    /* Allocate memory for kernels */
+    this->KBB = gsl_matrix_alloc(N, N);
+    this->KBC = gsl_matrix_alloc(N, N);
+    this->KDC = gsl_matrix_alloc(N, N);
+    this->KDB = gsl_vector_alloc(N);
+    /* Copy the values (not pointers) so we don't get memory leak */
+    gsl_matrix_memcpy(this->KBB, k.getKBB());
+    gsl_matrix_memcpy(this->KBC, k.getKBC());
+    gsl_matrix_memcpy(this->KDC, k.getKDC());
+    gsl_vector_memcpy(this->KDB, k.getKDB());
+}
 
 Kernels::Kernels(const Constants &consts, const Grid &grid, const SystemProperties &sysProps):
     KBB(gsl_matrix_calloc(grid.getN(), grid.getN())), KBC(gsl_matrix_calloc(grid.getN(), grid.getN())),

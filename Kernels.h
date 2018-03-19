@@ -15,6 +15,7 @@ private:
     gsl_vector *KDB;
 public:
     Kernels();
+    Kernels(const Kernels &k);
     Kernels(const Constants &consts, const Grid &grid, const SystemProperties &sysProps);
     // TODO: (Optional) Avoid double for loops and use elementwise operations
     void setBreakageKernels(const Constants &c, const Grid &g);
