@@ -16,22 +16,24 @@
 
 class SystemProperties {
 private:
-    realtype Rm, Vl, Vm, P, tf, eps;
+    realtype Rm, Vl, Vm, P, eps;
 public:
+    /* Constructors */
     SystemProperties();
     SystemProperties(const SystemProperties &s);
     SystemProperties(
-            realtype Rm, realtype Vl, realtype P, realtype tf, const Fluid &disp);
+            realtype Rm, realtype Vl, realtype P, const Fluid &disp);
 
+    /* Getter methods */
     realtype getRm() const;
     realtype getVl() const;
     realtype getVm() const;
     realtype getP() const;
-    realtype getTf() const;
     realtype getEps() const;
 
     friend std::ostream &operator<<(std::ostream &os, const SystemProperties &properties);
 
+    /* Destructors */
     ~SystemProperties();
 };
 

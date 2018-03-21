@@ -16,29 +16,26 @@ int main() {
      *  - Kernels           :: Contains kernels for breakage (KBB,kDB) and coalescence (KBC,KDC)
      *  - PBModel           :: Solves the entire model by the use of an ODE solver:
      *                         Utilizes all above classes
-     *
      */
     /*****************************************************************************************/
     /* Declaration of variables                                                              */
     /*****************************************************************************************/
-    const size_t Np = 10;
-    char const *fileName = "crudeB.csv";
-
+    const size_t Np = 5;                   /* Number of grid points    */
+    char const *fileName = "crudeB.csv";    /* Experimental data        */
+    realtype kb1 = 1.8190e-12,
+             kb2 = 1.819e-9,
+             kc1 = 1,
+             kc2 = 1e3;
     /*****************************************************************************************/
     /* Instantiation and solution                                                            */
     /*****************************************************************************************/
+    /* Helper classes */
     Grid g = Grid(Np, 0, 1, 0, 0, 2);
-    Fluid disp = Fluid(0.837e3, 22.0e-3, 16.88e-3);
-    Fluid cont = Fluid(1.0e3, 1, 1);
-    SystemProperties s = SystemProperties(500.0e-6, 725.0e-6, 0.366, 2965, disp);
-    Constants c = Constants(1.8190e-12,1.819e-9,1,1.0e3,s, cont, disp);
-    Kernels k = Kernels(c,g,s);
-    PBModel m = PBModel(fileName, g, k, c, s);
-    m.printDimensions();
-    m.printDistribution();
-    m.printTime();
-    m.printSizeClasses();
+    Fluid disp = Fluid(0.837e3, 22.0e-3, 16.88e-3); /* Oil      */
+    Fluid cont = Fluid(1.0e3, 1, 1);                /* Water    */
+    SystemProperties s = SystemProperties(500.0e-6, 725.0e-6, 0.366, disp);
+    PBModel m = PBModel(fileName, kb1, kb2, kc1, kc2, g, s, cont, disp);
+
     // TODO: Create the model to solve
-    // TODO: Remove contents of cmake-build-debug directory from github
     return 0;
 }

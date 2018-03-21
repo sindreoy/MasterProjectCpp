@@ -67,6 +67,6 @@ add_executable(MasterProjectCpp
         SystemProperties.cpp SystemProperties.h
         Grid.cpp Grid.h
         Kernels.cpp Kernels.h
-        Constants.cpp Constants.h PBModel.cpp PBModel.h)
+        PBModel.cpp PBModel.h)
 
 TARGET_LINK_LIBRARIES(MasterProjectCpp ${SUNDIALS_LIBS} ${GSL_LIBS})

@@ -177,33 +177,9 @@ CMakeFiles/MasterProjectCpp.dir/Kernels.cpp.o.provides: CMakeFiles/MasterProject
 CMakeFiles/MasterProjectCpp.dir/Kernels.cpp.o.provides.build: CMakeFiles/MasterProjectCpp.dir/Kernels.cpp.o
 
 
-CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o: CMakeFiles/MasterProjectCpp.dir/flags.make
-CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o: ../Constants.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o -c /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.cpp
-
-CMakeFiles/MasterProjectCpp.dir/Constants.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MasterProjectCpp.dir/Constants.cpp.i"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.cpp > CMakeFiles/MasterProjectCpp.dir/Constants.cpp.i
-
-CMakeFiles/MasterProjectCpp.dir/Constants.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MasterProjectCpp.dir/Constants.cpp.s"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.cpp -o CMakeFiles/MasterProjectCpp.dir/Constants.cpp.s
-
-CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o.requires:
-
-.PHONY : CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o.requires
-
-CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o.provides: CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o.requires
-	$(MAKE) -f CMakeFiles/MasterProjectCpp.dir/build.make CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o.provides.build
-.PHONY : CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o.provides
-
-CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o.provides.build: CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o
-
-
 CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o: CMakeFiles/MasterProjectCpp.dir/flags.make
 CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o: ../PBModel.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o -c /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.cpp
 
 CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.i: cmake_force
@@ -232,7 +208,6 @@ MasterProjectCpp_OBJECTS = \
 "CMakeFiles/MasterProjectCpp.dir/SystemProperties.cpp.o" \
 "CMakeFiles/MasterProjectCpp.dir/Grid.cpp.o" \
 "CMakeFiles/MasterProjectCpp.dir/Kernels.cpp.o" \
-"CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o" \
 "CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o"
 
 # External object files for target MasterProjectCpp
@@ -243,7 +218,6 @@ MasterProjectCpp: CMakeFiles/MasterProjectCpp.dir/Fluid.cpp.o
 MasterProjectCpp: CMakeFiles/MasterProjectCpp.dir/SystemProperties.cpp.o
 MasterProjectCpp: CMakeFiles/MasterProjectCpp.dir/Grid.cpp.o
 MasterProjectCpp: CMakeFiles/MasterProjectCpp.dir/Kernels.cpp.o
-MasterProjectCpp: CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o
 MasterProjectCpp: CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o
 MasterProjectCpp: CMakeFiles/MasterProjectCpp.dir/build.make
 MasterProjectCpp: /Users/Sindre/Sundials/instdir/lib/libsundials_cvode.dylib
@@ -251,7 +225,7 @@ MasterProjectCpp: /Users/Sindre/Sundials/instdir/lib/libsundials_nvecserial.dyli
 MasterProjectCpp: /Users/sindre/GSL/instdir/lib/libgsl.dylib
 MasterProjectCpp: /Users/sindre/GSL/instdir/lib/libgslcblas.dylib
 MasterProjectCpp: CMakeFiles/MasterProjectCpp.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable MasterProjectCpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable MasterProjectCpp"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/MasterProjectCpp.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -264,7 +238,6 @@ CMakeFiles/MasterProjectCpp.dir/requires: CMakeFiles/MasterProjectCpp.dir/Fluid.
 CMakeFiles/MasterProjectCpp.dir/requires: CMakeFiles/MasterProjectCpp.dir/SystemProperties.cpp.o.requires
 CMakeFiles/MasterProjectCpp.dir/requires: CMakeFiles/MasterProjectCpp.dir/Grid.cpp.o.requires
 CMakeFiles/MasterProjectCpp.dir/requires: CMakeFiles/MasterProjectCpp.dir/Kernels.cpp.o.requires
-CMakeFiles/MasterProjectCpp.dir/requires: CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o.requires
 CMakeFiles/MasterProjectCpp.dir/requires: CMakeFiles/MasterProjectCpp.dir/PBModel.cpp.o.requires
 
 .PHONY : CMakeFiles/MasterProjectCpp.dir/requires

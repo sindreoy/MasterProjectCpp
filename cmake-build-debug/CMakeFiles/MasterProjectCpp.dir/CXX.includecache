@@ -88,18 +88,6 @@ sunmatrix/sunmatrix_dense.h
 sundials/sundials_matrix.h
 -
 
-/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.cpp
-Constants.h
-/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.h
-
-/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.h
-iostream
--
-ostream
--
-SystemProperties.h
-/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h
-
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.cpp
 Fluid.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.h
@@ -149,12 +137,8 @@ Grid.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Grid.h
 SystemProperties.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h
-Constants.h
-/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.h
 
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.cpp
-gsl/gsl_matrix.h
--
 PBModel.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.h
 
@@ -162,6 +146,12 @@ PBModel.h
 cmath
 -
 ostream
+-
+cstdio
+-
+cstdlib
+-
+cstring
 -
 sundials/sundials_math.h
 -
@@ -183,8 +173,6 @@ Grid.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Grid.h
 SystemProperties.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h
-Constants.h
-/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.h
 
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.cpp
 SystemProperties.h

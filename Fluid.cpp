@@ -4,12 +4,14 @@
 
 #include "Fluid.h"
 
+/* Constructors */
 Fluid::Fluid() : rho(0), sigma(0), nu(0) {}
 
 Fluid::Fluid(const Fluid &f) : rho(f.getRho()), sigma(f.getSigma()), nu(f.getNu()){}
 
 Fluid::Fluid(realtype rho, realtype sigma, realtype nu) : rho(rho), sigma(sigma), nu(nu) {}
 
+/* Getter methods */
 realtype Fluid::getRho() const {
     return rho;
 }
@@ -27,6 +29,7 @@ std::ostream &operator<<(std::ostream &os, const Fluid &fluid) {
     return os;
 }
 
+/* Destructors */
 Fluid::~Fluid(){
     std::cout << "Destroying fluid" << std::endl;
 }

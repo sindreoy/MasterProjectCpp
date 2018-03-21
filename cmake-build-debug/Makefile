@@ -123,33 +123,6 @@ MasterProjectCpp/fast:
 	$(MAKE) -f CMakeFiles/MasterProjectCpp.dir/build.make CMakeFiles/MasterProjectCpp.dir/build
 .PHONY : MasterProjectCpp/fast
 
-Constants.o: Constants.cpp.o
-
-.PHONY : Constants.o
-
-# target to build an object file
-Constants.cpp.o:
-	$(MAKE) -f CMakeFiles/MasterProjectCpp.dir/build.make CMakeFiles/MasterProjectCpp.dir/Constants.cpp.o
-.PHONY : Constants.cpp.o
-
-Constants.i: Constants.cpp.i
-
-.PHONY : Constants.i
-
-# target to preprocess a source file
-Constants.cpp.i:
-	$(MAKE) -f CMakeFiles/MasterProjectCpp.dir/build.make CMakeFiles/MasterProjectCpp.dir/Constants.cpp.i
-.PHONY : Constants.cpp.i
-
-Constants.s: Constants.cpp.s
-
-.PHONY : Constants.s
-
-# target to generate assembly for a file
-Constants.cpp.s:
-	$(MAKE) -f CMakeFiles/MasterProjectCpp.dir/build.make CMakeFiles/MasterProjectCpp.dir/Constants.cpp.s
-.PHONY : Constants.cpp.s
-
 Fluid.o: Fluid.cpp.o
 
 .PHONY : Fluid.o
@@ -321,9 +294,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... MasterProjectCpp"
-	@echo "... Constants.o"
-	@echo "... Constants.i"
-	@echo "... Constants.s"
 	@echo "... Fluid.o"
 	@echo "... Fluid.i"
 	@echo "... Fluid.s"

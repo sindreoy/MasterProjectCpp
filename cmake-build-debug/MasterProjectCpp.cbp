@@ -86,12 +86,6 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.cpp">
-			<Option target="MasterProjectCpp"/>
-		</Unit>
-		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Constants.h">
-			<Option target="MasterProjectCpp"/>
-		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.cpp">
 			<Option target="MasterProjectCpp"/>
 		</Unit>

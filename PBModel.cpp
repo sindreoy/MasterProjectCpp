@@ -2,55 +2,59 @@
 // Created by Sindre Bakke Øyen on 18.03.2018.
 //
 
-#include <gsl/gsl_matrix.h>
 #include "PBModel.h"
 
+/* Constructors */
 PBModel::PBModel() = default;
 
-//PBModel::PBModel(const gsl_matrix &fv0, const gsl_vector &psi_vec, const gsl_vector &r, const gsl_vector &t,
-//             const Grid &g, const Kernels &k, const Constants &c):
-//psi_mat(SUNDenseMatrix(fv0.size1, fv0.size2)), psi(N_VNew_Serial(psi_vec.size)), r(N_VNew_Serial(r.size)),
-//time(N_VNew_Serial(t.size)), grid(g), kerns(k), consts(c), LS(nullptr), cvode_mem(nullptr)
-//{
-//    size_t i, j, N;
-//    N = g.getN();
-//
-//    /* Copy elements from fv0 [MxN] into psi_mat */
-//    for (i = 0; i < N; i++){
-//
-//    }
-//}
-PBModel::PBModel(char const *f, const Grid &g, const Kernels &k,
-             const Constants &c, const SystemProperties &s):
-        filename(f), grid(g), kerns(k), consts(c), sysProps(s){
+PBModel::PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realtype kc2,
+                 const Grid &g, const SystemProperties &s,
+                 const Fluid &cont, const Fluid &disp):
+        filename(f), grid(g), sysProps(s), cont(cont), disp(disp), cvode_mem(nullptr),
+        kerns(Kernels(kb1, kb2, kc1, kc2, 1, g, s, cont, disp)){
     /* Get rows and columns of csv file and initialize M and N respectively */
-    size_t rows=0, cols=0;
-    this->getRowsAndCols(rows, cols);
-    this->M      = rows;
-    this->N      = cols;
+    this->getRowsAndCols();
 
     /* Allocate memory for member variables */
     this->t      = gsl_vector_alloc(this->M);
     this->r      = gsl_vector_alloc(this->N);
     this->fv     = gsl_matrix_alloc(this->M, this->N);
-    this->gslPsi = gsl_matrix_alloc(this->M, this->N);
+    this->psi    = gsl_matrix_calloc(this->M, this->N);
+    this->tau    = gsl_vector_alloc(this->M);
+    this->NPsi   = N_VNew_Serial(this->N);
 
-    /* Set t, r, fv and rescale fv to phase fraction */
-    this->getDistributions(rows, cols);
+    /* Set experimental data: r, t, fv and rescale */
+    this->getDistributions();
     this->rescaleInitial();
 
-    /* Nondimensionalize fv (psi = fv*Rmax) */
-//    gsl_vector_view fv0 = gsl_matrix_row(this->fv, 0);
-//    gsl_matrix_scale(this->gslPsi, sysProps.getRm());
+    /* Set final time of experiment and update kernels */
+    realtype tf = gsl_vector_get(this->t, this->M - 1);
+    this->kerns.setTf(tf);
 
+    /* Assign nondimensional time tau = t / tf */
+    gsl_vector_memcpy(this->tau , this->t);
+    gsl_vector_scale(this->tau, 1/this->kerns.getTf());
+    this->tRequested = gsl_vector_get(this->tau, 0);
+
+    /* Assign nondimensional distribution psi = fv * Rm */
+    gsl_vector_view fv0 = gsl_matrix_row(this->fv, 0);
+    this->psiN = gsl_matrix_row(this->psi, 0);
+    gsl_vector_memcpy(&(this->psiN.vector), &fv0.vector);
+    gsl_matrix_scale(this->psi, sysProps.getRm());
+
+    /* Assign initial condition to solution vector */
+    NV_DATA_S(this->NPsi) = this->psiN.vector.data;
+
+    /* Prepare memory for integration */
+    this->prepareCVMemory();
 }
 
-void PBModel::getRowsAndCols(size_t &rows, size_t &cols){
+/* Helper methods */
+void PBModel::getRowsAndCols(){
     FILE *f = fopen(filename, "r");
     if (f != nullptr) {
         // Initialize variables
-        rows = 0;
-        cols = 0;
+        size_t rows = 0, cols = 0;
         size_t i=0, j=1000, tmp = 0;
         bool flag = false;
         realtype val = 0;
@@ -84,22 +88,24 @@ void PBModel::getRowsAndCols(size_t &rows, size_t &cols){
         }
         if (j > TRUNCATETHRESHOLD){
             cols = cols - TRASHCOLS - j + TRUNCATETHRESHOLD;
-        }
+        } else cols = cols - TRASHCOLS;
         rows = rows - TRASHROWS;
+        this->M = rows;
+        this->N = cols;
         fclose(f);
     } else {
         perror(filename);
     }
 }
 
-void PBModel::getDistributions(size_t &rows, size_t &cols) {
+void PBModel::getDistributions() {
     /* Declare needed variables */
     char *hours, *minutes;
     realtype h, m;
-    size_t i = 0, k = 0;; // Index variables
+    size_t i = 0, k = 0; // Index variables
 
     const char s[2] = ",";
-    const size_t bufSize = 10*(cols);
+    const size_t bufSize = 10*(this->N);
     char line[bufSize], *token, *toFree, *timeStr;
 
     /* Open file and start reading */
@@ -172,26 +178,99 @@ void PBModel::rescaleInitial(){
      * fv = phi/I * f0
      * Approximate I by trapezoids: I = sum([r(i+1)-r(i)] * [f(i+1)+f(i)]) from i=0 to N-1
      */
-    gsl_vector_view rowJ;
     size_t i, j;
-    realtype I, ri, rii, fji, fjii;
-    size_t M, N;
-    M = fv->size1;
-    N = fv->size2;
+    realtype I, rj, rjj, fij, fijj;
 
-    for (j = 0; j < M; j++){ /* Loop over rows */
-        I = 0;
-        for (i = 0; i < N-1; i++){ /* Loop over columns */
-            ri = gsl_vector_get(r, i); rii = gsl_vector_get(r, i+1);
-            fji = gsl_matrix_get(fv, j, i); fjii = gsl_matrix_get(fv, j, i+1);
-            I += ( rii-ri ) * ( fjii+fji );
+    for (i = 0; i < M; i++){ /* Loop over rows */
+        I  = 0;
+        for ( j = 0; j < N-1; j++ ){ /* Loop over columns */
+            rj  = gsl_vector_get(r, j); rjj = gsl_vector_get(r, j+1);
+            fij = gsl_matrix_get(fv, i, j); fijj = gsl_matrix_get(fv, i, j+1);
+            I  += ( rjj-rj ) * ( fijj+fij );
         }
         I = I/2;
-        rowJ = gsl_matrix_row(fv, j);
+        gsl_vector_view rowJ = gsl_matrix_row(fv, i);
         gsl_vector_scale(&rowJ.vector, PHI/I);
     }
 }
 
+int PBModel::prepareCVMemory(){
+    int flag = 0;
+    /* Call CVodeCreate to create the solver memory and specify the
+     * Backward Differentiation Formula and the use of a Newton iteration */
+    this->cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+    if (checkFlag((void *)this->cvode_mem, "CVodeCreate", 0)) return(1);
+
+    /* Call CVodeInit to initialize the integrator memory and specify the
+     * user's right hand side function in y'=f(t,y), the inital time T0, and
+     * the initial dependent variable vector y. */
+    flag = CVodeInit(this->cvode_mem, this->getRHS, gsl_vector_get(this->tau, 0), this->NPsi);
+    if (checkFlag(&flag, "CVodeInit", 1)) return(1);
+
+    /* Call CVodeSStolerances to specify the scalar relative tolerance
+     * and scalar absolute tolerance */
+    flag = CVodeSStolerances(this->cvode_mem, RTOL, ATOL);
+    if (checkFlag(&flag, "CVodeSStolerances", 1)) return(1);
+
+    /* Create dense SUNMatrix for use in linear solves */
+    this->A = SUNDenseMatrix(this->N, this->N);
+    if(checkFlag((void *)this->A, "SUNDenseMatrix", 0)) return(1);
+
+    /* Create dense SUNLinearSolver object for use by CVode */
+    this->LS = SUNDenseLinearSolver(this->NPsi, this->A);
+    if(checkFlag((void *)this->LS, "SUNDenseLinearSolver", 0)) return(1);
+
+    /* Call CVDlsSetLinearSolver to attach the matrix and linear solver to CVode */
+    flag = CVDlsSetLinearSolver(this->cvode_mem, this->LS, this->A);
+    if(checkFlag(&flag, "CVDlsSetLinearSolver", 1)) return(1);
+    std::cout << flag << std::endl;
+    return flag;
+}
+
+int PBModel::checkFlag(void *flagvalue, const char *funcname, int opt){
+    int *errflag;
+
+    /* Check if SUNDIALS function returned NULL pointer - no memory allocated */
+    if (opt == 0 && flagvalue == NULL) {
+        fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed - returned NULL pointer\n\n",
+                funcname);
+        return(1); }
+
+        /* Check if flag < 0 */
+    else if (opt == 1) {
+        errflag = (int *) flagvalue;
+        if (*errflag < 0) {
+            fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed with flag = %d\n\n",
+                    funcname, *errflag);
+            return(1); }}
+
+        /* Check if function returned NULL pointer - no memory allocated */
+    else if (opt == 2 && flagvalue == NULL) {
+        fprintf(stderr, "\nMEMORY_ERROR: %s() failed - returned NULL pointer\n\n",
+                funcname);
+        return(1); }
+
+    return(0);
+}
+
+/* Solver methods */
+int PBModel::getRHS(realtype t, N_Vector y, N_Vector ydot, void *user_data){
+    // TODO: Do a bunch of math in GSL and copy the data in RHS vector to ydot.
+    return 0;
+}
+
+/* getRHS will return ydot, such that N_Vector NPsi is updated. Therefore:
+ * TODO: After each time iteration, copy the data of NPsi into correct row of gsl_matrix psi
+ */
+int PBModel::timeIterate() {
+    return 0;
+}
+
+int PBModel::solvePBE(){
+    return 0;
+}
+
+/* Getter methods */
 gsl_matrix *PBModel::getFv() const {
     return fv;
 }
@@ -212,12 +291,54 @@ size_t PBModel::getN() const {
     return N;
 }
 
-void PBModel::printDistribution(){
+const Grid &PBModel::getGrid() const {
+    return grid;
+}
+
+const Kernels &PBModel::getKerns() const {
+    return kerns;
+}
+
+const SystemProperties &PBModel::getSysProps() const {
+    return sysProps;
+}
+
+const Fluid &PBModel::getCont() const {
+    return cont;
+}
+
+const Fluid &PBModel::getDisp() const {
+    return disp;
+}
+
+/* Printer methods */
+void PBModel::printExperimentalDistribution(){
     size_t i, j;
     std::cout << "The droplet size density distribution:" << std::endl;
     for (i=0;i<M;i++){
         for(j=0;j<N;j++){
             std::cout << std::setw(4) << std::setprecision(4) << gsl_matrix_get(fv, i, j) << "\t";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void PBModel::printCurrentPsi(){
+    realtype *data = NV_DATA_S(this->NPsi);
+    size_t i = 0;
+    std::cout << "Psi for the current time iteration is: " << std::endl;
+    for (i = 0; i < this->N; i++){
+        std::cout << std::setw(8) << std::setprecision(3) << data[i];
+    }
+    std::cout << std::endl;
+}
+
+void PBModel::printPsi(){
+    size_t i = 0, j = 0;
+    std::cout << "Nondimensionalized droplet size density distribution:" << std::endl;
+    for (i = 0; i < this->M; i++){
+        for (j = 0; j < this->N; j++){
+            std::cout << std::setw(4) << std::setprecision(3) << gsl_matrix_get(psi, i, j) << "\t";
         }
         std::cout << std::endl;
     }
@@ -236,6 +357,15 @@ void PBModel::printTime() {
     std::cout << std::endl;
 }
 
+void PBModel::printTau(){
+    size_t i = 0;
+    std::cout << "Nondimensionalized time vector: " << std::endl;
+    for (i = 0; i < this->M; i++){
+        std::cout << std::setw(6) << std::setprecision(2) << gsl_vector_get(this->tau, i);
+    }
+    std::cout << std::endl;
+}
+
 void PBModel::printSizeClasses() {
     size_t i = 0;
     std::cout << "Measured size classes: " << std::endl;
@@ -245,6 +375,16 @@ void PBModel::printSizeClasses() {
     std::cout << std::endl;
 }
 
+/* Destructors */
 PBModel::~PBModel(){
     gsl_matrix_free(this->fv);
+    gsl_matrix_free(this->psi);
+    gsl_vector_free(this->r);
+    gsl_vector_free(this->t);
+    gsl_vector_free(this->tau);
+    /* NPsi->data points to a row in psi. psi is freed, so we cannot free NPsi yet.
+     * Point NPsi->data to nullptr before freeing, so we don't encounter memory issues.
+     */
+    NV_DATA_S(this->NPsi) = nullptr;
+    N_VDestroy_Serial(this->NPsi);
 }

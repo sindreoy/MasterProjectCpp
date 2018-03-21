@@ -5,6 +5,7 @@
 #include "Grid.h"
 #include <iostream>
 
+/* Constructors */
 Grid::Grid() = default;
 
 Grid::Grid(const Grid &g):N(g.getN()), x0(g.getX0()), x1(g.getX1()), alpha(g.getAlpha()),
@@ -76,6 +77,7 @@ void Grid::coefs(size_t j, realtype *r){
 
 }
 
+/* Setter methods */
 void Grid::setQuadratureRule() {
     /* Computes the N-point Gauss Lobatto quadrature rule with Jacobi polynomials
      * The function uses the Golub Welsch algorithm,
@@ -300,6 +302,7 @@ void Grid::setInterpolatedXis(){
     }
 }
 
+/* Getter methods */
 size_t Grid::getN() const {
     return N;
 }
@@ -396,6 +399,7 @@ std::ostream &operator<<(std::ostream &os, const Grid &grid) {
     return os;
 }
 
+/* Destructors */
 Grid::~Grid(){
     gsl_vector_free(this->xi);
     gsl_vector_free(this->w);
