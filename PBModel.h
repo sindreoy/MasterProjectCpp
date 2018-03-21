@@ -15,26 +15,29 @@
 #include <cstring>
 
 /* External library header files */
-#include <sundials/sundials_math.h>     /* Math functions, power etc                    */
-#include <sundials/sundials_types.h>    /* Datatypes such as realtype                   */
-#include <cvode/cvode.h>                /* prototypes for CVODE fcts., consts.          */
-#include <nvector/nvector_serial.h>     /* access to serial N_Vector                    */
-#include <sunmatrix/sunmatrix_dense.h>  /* access to band SUNMatrix                     */
-#include <sunlinsol/sunlinsol_dense.h>  /* access to band SUNLinearSolver               */
-#include <cvode/cvode_direct.h>         /* access to CVDls interface                    */
+#include <sundials/sundials_math.h>     /* Math functions, power etc                        */
+#include <sundials/sundials_types.h>    /* Data types such as realtype                      */
+#include <cvode/cvode.h>                /* prototypes for CVODE fcts., consts.              */
+#include <nvector/nvector_serial.h>     /* access to serial N_Vector                        */
+#include <sunmatrix/sunmatrix_dense.h>  /* access to band SUNMatrix                         */
+#include <sunlinsol/sunlinsol_dense.h>  /* access to band SUNLinearSolver                   */
+#include <cvode/cvode_direct.h>         /* access to CVDls interface                        */
+
+#include <gsl/gsl_spline.h>             /* Spline interpolation from GSL                    */
+#include <gsl/gsl_interp.h>             /* Interpolation header from GSL                    */
 
 /* User-defined header files */
-#include "Kernels.h"                    /* Contains kernels, override to use other kerns*/
-#include "Grid.h"                       /* Contains Gaussian quadrature rule            */
-#include "SystemProperties.h"           /* Contains data from experimental setup + fluid*/
+#include "Kernels.h"                    /* Contains kernels, override to use other kernels  */
+#include "Grid.h"                       /* Contains Gaussian quadrature rule                */
+#include "SystemProperties.h"           /* Contains data from experimental setup + fluid    */
 
 /* Define constants for program to run */
-#define RTOL RCONST(1.0e-4)             /* Relative integration tolerance               */
-#define ATOL RCONST(1.0e-8)             /* Absolute integration tolerance               */
-#define PHI  RCONST(0.7e-2)             /* Phase fraction of oil in water               */
-#define TRASHROWS RCONST(2)             /* Rows in csv not containing relevant data     */
-#define TRASHCOLS RCONST(9)             /* Columns in csv not containing relevant data  */
-#define TRUNCATETHRESHOLD RCONST(6)     /* Truncate 0's in csv if many consecutive 0's  */
+#define RTOL                RCONST(1.0e-4)              /* Relative integration tolerance              */
+#define ATOL                RCONST(1.0e-8)              /* Absolute integration tolerance              */
+#define PHI                 RCONST(0.7e-2)              /* Phase fraction of oil in water              */
+#define TRASHROWS           RCONST(2)                   /* Rows in csv not containing relevant data    */
+#define TRASHCOLS           RCONST(9)                   /* Columns in csv not containing relevant data */
+#define TRUNCATETHRESHOLD   RCONST(6)                   /* Truncate 0's in csv if many consecutive 0's */
 
 /****************************************************************************************/
 /* Class declaration                                                                    */
@@ -45,8 +48,8 @@ private:
     size_t M, N;
 
     /* Experimental data */
-    gsl_matrix *fv;
-    gsl_vector *r, *t;
+    gsl_matrix *fv;             /* size MxN             */
+    gsl_vector *r, *t;          /* size N, size M       */
 
     /* Modeled data */
     /* TODO: Create gsl_vector_view psiN = gsl_matrix_row(psi, timeIndex)
@@ -54,15 +57,21 @@ private:
      *       getRHS only has to return NPsi, so no problems with column-major <--> row-major :D
      *       Set NPsi->data to nullptr before freeing object
      */
-    realtype tProduced, tRequested;
-    gsl_matrix *psi;
-    gsl_vector_view psiN;
-    gsl_vector *tau;
-    N_Vector NPsi;
+    realtype tout, tRequested;
+    gsl_matrix *psi;            /* size Mxgrid.getN()   */
+    gsl_vector_view psiN;       /* size grid.getN()     */
+    gsl_vector *tau;            /* size M               */
+    N_Vector NPsi;              /* size grid.getN()     */
+
+    /* Spline variables, total 3 (1 xipBB, 2 xipBC + xippBC): REDUNDANT? */
+
+
+    /* Sundials variables for evaluating ODE */
     SUNMatrix A;
     SUNLinearSolver LS;
     void *cvode_mem;
 
+    /* Classes to help evaluate model */
     Grid grid;
     Kernels kerns;
     SystemProperties sysProps;
@@ -77,8 +86,10 @@ public:
     void getRowsAndCols();
     void getDistributions();
     void rescaleInitial();
+    int preparePsi();
     int prepareCVMemory(); /* Allocates memory for ODE solver and prepares it for solution */
     int checkFlag(void *flagvalue, const char *funcname, int opt);
+
 
     /* Solver methods */
     static int getRHS(realtype t, N_Vector y, N_Vector ydot, void *user_data);
@@ -102,11 +113,11 @@ public:
 
     /* Print methods */
     void printExperimentalDistribution();
+    void printSizeClasses();
     void printCurrentPsi();
     void printPsi();
     void printTime();
     void printTau();
-    void printSizeClasses();
     void printDimensions();
 
     /* Destructors */

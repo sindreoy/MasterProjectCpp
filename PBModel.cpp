@@ -12,6 +12,7 @@ PBModel::PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realty
                  const Fluid &cont, const Fluid &disp):
         filename(f), grid(g), sysProps(s), cont(cont), disp(disp), cvode_mem(nullptr),
         kerns(Kernels(kb1, kb2, kc1, kc2, 1, g, s, cont, disp)){
+    int flag = 0;
     /* Get rows and columns of csv file and initialize M and N respectively */
     this->getRowsAndCols();
 
@@ -19,9 +20,10 @@ PBModel::PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realty
     this->t      = gsl_vector_alloc(this->M);
     this->r      = gsl_vector_alloc(this->N);
     this->fv     = gsl_matrix_alloc(this->M, this->N);
-    this->psi    = gsl_matrix_calloc(this->M, this->N);
     this->tau    = gsl_vector_alloc(this->M);
-    this->NPsi   = N_VNew_Serial(this->N);
+    /* These must be on another domain (xi, not r) */
+    this->psi    = gsl_matrix_calloc(this->M, grid.getN());
+    this->NPsi   = N_VNew_Serial(grid.getN());
 
     /* Set experimental data: r, t, fv and rescale */
     this->getDistributions();
@@ -34,19 +36,19 @@ PBModel::PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realty
     /* Assign nondimensional time tau = t / tf */
     gsl_vector_memcpy(this->tau , this->t);
     gsl_vector_scale(this->tau, 1/this->kerns.getTf());
-    this->tRequested = gsl_vector_get(this->tau, 0);
+    this->tRequested = gsl_vector_get(this->tau, 1);
 
-    /* Assign nondimensional distribution psi = fv * Rm */
-    gsl_vector_view fv0 = gsl_matrix_row(this->fv, 0);
-    this->psiN = gsl_matrix_row(this->psi, 0);
-    gsl_vector_memcpy(&(this->psiN.vector), &fv0.vector);
-    gsl_matrix_scale(this->psi, sysProps.getRm());
+    /* Assign nondimensional initial distribution */
+    this->psiN   = gsl_matrix_row(this->psi, 0);
+    flag = this->preparePsi();
+    if (flag == 1) perror("Failed to interpolate fv onto psi");
 
     /* Assign initial condition to solution vector */
     NV_DATA_S(this->NPsi) = this->psiN.vector.data;
 
     /* Prepare memory for integration */
-    this->prepareCVMemory();
+    flag = this->prepareCVMemory();
+    if (flag == 1) perror("Failed to prepare ODE memory");
 }
 
 /* Helper methods */
@@ -194,6 +196,38 @@ void PBModel::rescaleInitial(){
     }
 }
 
+int PBModel::preparePsi(){
+    realtype xN, yN;
+    /* Allocate memory for Steffen spline on experimental psi */
+    gsl_vector_view fv0 = gsl_matrix_row(this->fv, 0);
+    gsl_vector *psi0 = gsl_vector_alloc(this->N);
+    gsl_vector_memcpy(psi0, &fv0.vector);
+    gsl_vector_scale(psi0, this->sysProps.getRm());
+
+    /* Create temporary experimental radius / Rm */
+    gsl_vector *tmp = gsl_vector_alloc(this->N);
+    gsl_vector_memcpy(tmp, this->r);
+    gsl_vector_scale(tmp, 1/sysProps.getRm());
+
+    gsl_interp_accel *acc = gsl_interp_accel_alloc();
+    gsl_spline *spline = gsl_spline_alloc(gsl_interp_steffen, this->N);
+    gsl_spline_init(spline, &tmp->data[0], &psi0->data[0], this->N);
+
+    for (size_t i = 0; i < grid.getN(); i++){
+        xN = gsl_vector_get(grid.getXi(), i);
+        if (xN > gsl_vector_get(tmp, 0) && xN < gsl_vector_get(tmp, this->N-1)) {
+            yN = gsl_spline_eval(spline, xN, acc);
+        } else yN = 0;
+        gsl_vector_set(&psiN.vector, i, yN);
+    }
+
+    gsl_vector_free(psi0);
+    gsl_vector_free(tmp);
+    gsl_spline_free (spline);
+    gsl_interp_accel_free (acc);
+    return 0;
+}
+
 int PBModel::prepareCVMemory(){
     int flag = 0;
     /* Call CVodeCreate to create the solver memory and specify the
@@ -223,7 +257,6 @@ int PBModel::prepareCVMemory(){
     /* Call CVDlsSetLinearSolver to attach the matrix and linear solver to CVode */
     flag = CVDlsSetLinearSolver(this->cvode_mem, this->LS, this->A);
     if(checkFlag(&flag, "CVDlsSetLinearSolver", 1)) return(1);
-    std::cout << flag << std::endl;
     return flag;
 }
 
@@ -256,6 +289,23 @@ int PBModel::checkFlag(void *flagvalue, const char *funcname, int opt){
 /* Solver methods */
 int PBModel::getRHS(realtype t, N_Vector y, N_Vector ydot, void *user_data){
     // TODO: Do a bunch of math in GSL and copy the data in RHS vector to ydot.
+    realtype *ydata = NV_DATA_S(y);
+    realtype *ydotdata = NV_DATA_S(ydot);
+
+//    gsl_interp_accel *acc
+//            = gsl_interp_accel_alloc ();
+//    gsl_spline *spline
+//            = gsl_spline_alloc (gsl_interp_cspline, 10);
+//
+//    gsl_spline_init (spline, x, y, 10);
+//
+//    for (xi = x[0]; xi < x[9]; xi += 0.01)
+//    {
+//        yi = gsl_spline_eval (spline, xi, acc);
+//        printf ("%g %g\n", xi, yi);
+//    }
+//    gsl_spline_free (spline);
+//    gsl_interp_accel_free (acc);
     return 0;
 }
 
@@ -323,11 +373,20 @@ void PBModel::printExperimentalDistribution(){
     }
 }
 
+void PBModel::printSizeClasses() {
+    size_t i = 0;
+    std::cout << "Measured size classes: " << std::endl;
+    for (i = 0; i < this->N; i++){
+        std::cout << std::setw(10) << std::setprecision(7) << gsl_vector_get(this->r, i);
+    }
+    std::cout << std::endl;
+}
+
 void PBModel::printCurrentPsi(){
     realtype *data = NV_DATA_S(this->NPsi);
     size_t i = 0;
     std::cout << "Psi for the current time iteration is: " << std::endl;
-    for (i = 0; i < this->N; i++){
+    for (i = 0; i < grid.getN(); i++){
         std::cout << std::setw(8) << std::setprecision(3) << data[i];
     }
     std::cout << std::endl;
@@ -337,7 +396,7 @@ void PBModel::printPsi(){
     size_t i = 0, j = 0;
     std::cout << "Nondimensionalized droplet size density distribution:" << std::endl;
     for (i = 0; i < this->M; i++){
-        for (j = 0; j < this->N; j++){
+        for (j = 0; j < grid.getN(); j++){
             std::cout << std::setw(4) << std::setprecision(3) << gsl_matrix_get(psi, i, j) << "\t";
         }
         std::cout << std::endl;
@@ -362,15 +421,6 @@ void PBModel::printTau(){
     std::cout << "Nondimensionalized time vector: " << std::endl;
     for (i = 0; i < this->M; i++){
         std::cout << std::setw(6) << std::setprecision(2) << gsl_vector_get(this->tau, i);
-    }
-    std::cout << std::endl;
-}
-
-void PBModel::printSizeClasses() {
-    size_t i = 0;
-    std::cout << "Measured size classes: " << std::endl;
-    for (i = 0; i < this->N; i++){
-        std::cout << std::setw(10) << std::setprecision(7) << gsl_vector_get(this->r, i);
     }
     std::cout << std::endl;
 }
