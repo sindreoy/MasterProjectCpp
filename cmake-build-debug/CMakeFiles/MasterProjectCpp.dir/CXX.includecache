@@ -167,6 +167,10 @@ sunlinsol/sunlinsol_dense.h
 -
 cvode/cvode_direct.h
 -
+gsl/gsl_spline.h
+-
+gsl/gsl_interp.h
+-
 Kernels.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Kernels.h
 Grid.h
@@ -317,6 +321,14 @@ gsl/gsl_types.h
 -
 
 /Users/sindre/GSL/instdir/include/gsl/gsl_inline.h
+
+/Users/sindre/GSL/instdir/include/gsl/gsl_interp.h
+stdlib.h
+-
+gsl/gsl_inline.h
+-
+gsl/gsl_types.h
+-
 
 /Users/sindre/GSL/instdir/include/gsl/gsl_linalg.h
 stdlib.h
@@ -614,6 +626,12 @@ gsl/gsl_inline.h
 
 /Users/sindre/GSL/instdir/include/gsl/gsl_precision.h
 gsl/gsl_types.h
+-
+
+/Users/sindre/GSL/instdir/include/gsl/gsl_spline.h
+stdlib.h
+-
+gsl/gsl_interp.h
 -
 
 /Users/sindre/GSL/instdir/include/gsl/gsl_sys.h
