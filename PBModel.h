@@ -45,26 +45,18 @@
 class PBModel {
 private:
     char const *filename;
-    size_t M, N;
+    size_t M, N;                /* Only used for experimental data */
 
     /* Experimental data */
     gsl_matrix *fv;             /* size MxN             */
     gsl_vector *r, *t;          /* size N, size M       */
 
     /* Modeled data */
-    /* TODO: Create gsl_vector_view psiN = gsl_matrix_row(psi, timeIndex)
-     *       Then NPsi can be that specific time instant --> Solve that time instant
-     *       getRHS only has to return NPsi, so no problems with column-major <--> row-major :D
-     *       Set NPsi->data to nullptr before freeing object
-     */
     realtype tout, tRequested;
     gsl_matrix *psi;            /* size Mxgrid.getN()   */
     gsl_vector_view psiN;       /* size grid.getN()     */
     gsl_vector *tau;            /* size M               */
     N_Vector NPsi;              /* size grid.getN()     */
-
-    /* Spline variables, total 3 (1 xipBB, 2 xipBC + xippBC): REDUNDANT? */
-
 
     /* Sundials variables for evaluating ODE */
     SUNMatrix A;
@@ -72,15 +64,16 @@ private:
     void *cvode_mem;
 
     /* Classes to help evaluate model */
-    Grid grid;
+    const Grid grid;
     Kernels kerns;
-    SystemProperties sysProps;
-    Fluid cont, disp;
+    const SystemProperties sysProps;
+    const Fluid cont, disp;
 public:
     /* Constructors */
     PBModel();
     PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realtype kc2,
             const Grid &g, const SystemProperties &s, const Fluid &cont, const Fluid &disp);
+
 
     /* Helper methods */
     void getRowsAndCols();
@@ -92,11 +85,13 @@ public:
 
 
     /* Solver methods */
-    static int getRHS(realtype t, N_Vector y, N_Vector ydot, void *user_data);
-    static int timeIterate();
-    static int solvePBE();
+    int getRHS(N_Vector y, N_Vector ydot);
+    static int interpolatePsi(const gsl_vector *x, const gsl_vector *y, const gsl_matrix *xx, gsl_matrix *yy);
+    int timeIterate();
+    int solvePBE();
 
     /* Setter methods */
+
 
     /* Getter methods */
     gsl_matrix *getFv() const;
@@ -111,6 +106,7 @@ public:
     const Fluid &getCont() const;
     const Fluid &getDisp() const;
 
+
     /* Print methods */
     void printExperimentalDistribution();
     void printSizeClasses();
@@ -123,5 +119,9 @@ public:
     /* Destructors */
     ~PBModel();
 };
-
+inline int dydt(realtype t, N_Vector y, N_Vector ydot, void *user_data){
+    PBModel *obj = static_cast<PBModel *> (user_data);
+    int err = obj->getRHS(y, ydot);
+    return err;
+}
 #endif //MASTERPROJECTCPP_MODEL_H
