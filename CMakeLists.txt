@@ -61,8 +61,8 @@ FIND_LIBRARY(GSL_CBLAS
 SET(GSL_LIBS ${GSL_LIBRARY} ${GSL_CBLAS})
 ##################################################################################
 add_executable(MasterProjectCpp
-    cmake-build-debug/crudeB.csv
-    main.cpp
+        cmake-build-debug/crudeB.csv
+        main.cpp
         Fluid.cpp Fluid.h
         SystemProperties.cpp SystemProperties.h
         Grid.cpp Grid.h
