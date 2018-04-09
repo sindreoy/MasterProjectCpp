@@ -2,6 +2,7 @@
 // Created by Sindre Bakke Øyen on 18.03.2018.
 //
 
+#include <gsl/gsl_vector_double.h>
 #include "PBModel.h"
 
 /* Constructors */
@@ -21,6 +22,8 @@ PBModel::PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realty
     this->r      = gsl_vector_alloc(this->N);
     this->fv     = gsl_matrix_alloc(this->M, this->N);
     this->tau    = gsl_vector_alloc(this->M);
+    this->fvSim  = gsl_matrix_calloc(this->M, this->N);
+
     /* These must be on another domain (xi, not r) */
     this->psi    = gsl_matrix_calloc(this->M, grid.getN());
     this->NPsi   = N_VNew_Serial(grid.getN());
@@ -436,6 +439,8 @@ int PBModel::interpolatePsi(const gsl_vector *x, const gsl_vector *y, const gsl_
     /* x and y is original data, xx and yy is interpolated data */
     size_t i=0, j=0;
     realtype xN, yN;
+    realtype x0   = gsl_vector_get(x, 0);
+    realtype xend = gsl_vector_get(x, x->size - 1);
     gsl_interp_accel *acc = gsl_interp_accel_alloc();
 
     gsl_spline *spline = gsl_spline_alloc(gsl_interp_steffen, x->size);
@@ -444,7 +449,7 @@ int PBModel::interpolatePsi(const gsl_vector *x, const gsl_vector *y, const gsl_
     for (i = 0; i < xx->size1; i++) {     /* Loop over rows       */
         for (j = 0; j < xx->size2; j++) { /* Loop over columns    */
             xN = gsl_matrix_get(xx, i, j);
-            if (xN > gsl_vector_get(x, 0) && xN < gsl_vector_get(x, x->size - 1)) {
+            if (xN > x0 && xN < xend) {
                 yN = gsl_spline_eval(spline, xN, acc);
             } else yN = 0; /* If we are outside of experimental radius, 0 our distribution */
             gsl_matrix_set(yy, i, j, yN);
@@ -452,6 +457,29 @@ int PBModel::interpolatePsi(const gsl_vector *x, const gsl_vector *y, const gsl_
     }
     gsl_spline_free (spline);
     gsl_interp_accel_free (acc);
+    return 0;
+}
+
+int PBModel::interpolateFv(const gsl_vector *x, const gsl_vector *y, const gsl_vector *xx, gsl_vector *yy){
+    /* x and y is original data. xx and yy is interpolated data */
+    size_t i=0;
+    realtype xN, yN;
+    realtype x0   = gsl_vector_get(x, 0);
+    realtype xend = gsl_vector_get(x, x->size -1);
+    gsl_interp_accel *acc = gsl_interp_accel_alloc();
+
+    gsl_spline *spline = gsl_spline_alloc(gsl_interp_steffen, x->size);
+    gsl_spline_init(spline, x->data, y->data, x->size);
+    /* Interpolate onto xx domain and get yy values */
+    for (i = 0; i < xx->size; i++){
+        xN = gsl_vector_get(xx, i);
+        if (xN > x0 && xN < xend){
+            yN = gsl_spline_eval(spline, xN, acc);
+        } else yN = 0;
+        gsl_vector_set(yy, i, yN);
+    }
+    gsl_spline_free (spline);
+    gsl_interp_accel_free(acc);
     return 0;
 }
 
@@ -477,10 +505,40 @@ int PBModel::solvePBE(){
         gsl_vector_view row = gsl_matrix_row(this->psi, i);
         gsl_vector_memcpy(&row.vector, &(this->psiN.vector));
     }
-    this->printPsi();
+
+    /** Interpolate solution back onto experimental radial domain   **/
+    /** i.e. psi(xi, tau) --> fv(r, t)                              **/
+    /* Matrix fvSim will hold fv on experimental domain             */
+    /* Create temporary matrix to hold fv on discretized domain     */
+    gsl_matrix *tmpPsi   = gsl_matrix_alloc(this->M, this->grid.getN());
+    /* Create temporary vector to hold simulated radii on [0, Rm]   */
+    gsl_vector *tmpR     = gsl_vector_alloc(this->grid.getN());
+    /* Copy original data */
+    gsl_vector_memcpy(tmpR, this->grid.getXi());
+    gsl_matrix_memcpy(tmpPsi, this->psi);
+    /* Scale original data */
+    gsl_vector_scale(tmpR, sysProps.getRm());
+    gsl_matrix_scale(tmpPsi, 1/sysProps.getRm());
+
+    for (i = 0; i < this->M; i++) {
+        gsl_vector_view tmpPsii   = gsl_matrix_row(tmpPsi, i);
+        gsl_vector_view fvSimi = gsl_matrix_row(this->fvSim, i);
+        interpolateFv(tmpR, &tmpPsii.vector, this->r, &fvSimi.vector);
+    }
+    this->printFvSimulated();
+    gsl_matrix_free(tmpPsi);
+    gsl_vector_free(tmpR);
     return 0;
 }
 
+realtype PBModel::getResidualij(size_t i, size_t j){
+    /* fvSim was set in solvePBE method and should by now
+     * hold simulated fv on experimental radial domain
+     */
+    realtype fvSimVal = gsl_matrix_get(this->fvSim, i, j);
+    realtype fvExpVal = gsl_matrix_get(this->fv, i, j);
+    return (fvSimVal - fvExpVal);
+}
 
 /* Getter methods */
 gsl_matrix *PBModel::getFv() const {
@@ -560,7 +618,18 @@ void PBModel::printPsi(){
     std::cout << "Nondimensionalized droplet size density distribution:" << std::endl;
     for (i = 0; i < this->M; i++){
         for (j = 0; j < grid.getN(); j++){
-            std::cout << std::setw(4) << std::setprecision(3) << gsl_matrix_get(psi, i, j) << "\t";
+            std::cout << std::setw(12) << std::setprecision(3) << gsl_matrix_get(psi, i, j);
+        }
+        std::cout << std::endl;
+    }
+}
+
+void PBModel::printFvSimulated(){
+    size_t i = 0, j = 0;
+    std::cout << "Droplet size density distribution fvSim(r, t):" << std::endl;
+    for (i = 0; i < this->M; i++){
+        for (j = 0; j < this->N; j++){
+            std::cout << std::setw(12) << std::setprecision(3) << gsl_matrix_get(this->fvSim, i, j);
         }
         std::cout << std::endl;
     }
@@ -588,6 +657,31 @@ void PBModel::printTau(){
     std::cout << std::endl;
 }
 
+
+/* Exporter methods */
+int PBModel::exportFvSimulated(const std::string &fileName) {
+    if (fileExists(fileName)) {return 1;} /* fileExists declared inline in header */
+    size_t i = 0, j = 0;
+    std::ofstream outfile;
+
+    outfile.open(fileName);
+    outfile << "#r,fv\n";
+    for (i = 0; i < this->N; i++) {
+        outfile << gsl_vector_get(this->r, i) << ",";
+        for (j = 0; j < this->M; j++) {
+            outfile << gsl_matrix_get(this->fvSim, j, i) << ",";
+        }
+        outfile << std::endl;
+    }
+    outfile.close();
+    return 0;
+}
+
+int PBModel::exportPsiWithExperimental(const std::string &fileName) {
+    if (fileExists(fileName)) { return 1; } /* fileExists declared inline in header */
+    // TODO: Create this method by interpolating back onto measured radii and export both as in exportFvSimulated
+    return 0;
+}
 
 /* Destructors */
 PBModel::~PBModel(){

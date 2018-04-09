@@ -10,9 +10,11 @@
 /* Built-in header files */
 #include <cmath>
 #include <ostream>
+#include <fstream>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <sys/stat.h>
 
 /* External library header files */
 #include <sundials/sundials_math.h>     /* Math functions, power etc                        */
@@ -48,18 +50,19 @@ private:
     size_t M, N;                /* Only used for experimental data */
 
     /* Experimental data */
-    gsl_matrix *fv;             /* size MxN             */
-    gsl_vector *r, *t;          /* size N, size M       */
+    gsl_matrix *fv;             /* size MxN         */
+    gsl_vector *r, *t;          /* size N, size M   */
 
     /* Modeled data */
     realtype tout, tRequested;
-    gsl_matrix *psi;            /* size Mxgrid.getN()   */
-    gsl_vector_view psiN;       /* size grid.getN()     */
-    gsl_vector *tau;            /* size M               */
-    N_Vector NPsi;              /* size grid.getN()     */
+    gsl_matrix *psi;            /* size Mxgrid.getN()                                       */
+    gsl_vector_view psiN;       /* size grid.getN()                                         */
+    gsl_vector *tau;            /* size M                                                   */
+    gsl_matrix *fvSim;          /* Holds modeled fv on experimental radial domain (size MxN)*/
 
     /* Sundials variables for evaluating ODE */
     SUNMatrix A;
+    N_Vector NPsi;              /* size grid.getN() */
     SUNLinearSolver LS;
     void *cvode_mem;
 
@@ -87,8 +90,10 @@ public:
     /* Solver methods */
     int getRHS(N_Vector y, N_Vector ydot);
     static int interpolatePsi(const gsl_vector *x, const gsl_vector *y, const gsl_matrix *xx, gsl_matrix *yy);
+    static int interpolateFv(const gsl_vector *x, const gsl_vector *y, const gsl_vector *xx, gsl_vector *yy);
     int timeIterate();
     int solvePBE();
+    realtype getResidualij(size_t i, size_t j);
 
     /* Setter methods */
 
@@ -112,9 +117,19 @@ public:
     void printSizeClasses();
     void printCurrentPsi();
     void printPsi();
+    void printFvSimulated();
     void printTime();
     void printTau();
     void printDimensions();
+
+
+    /* Exporter methods */
+    int exportFvSimulated(const std::string &fileName);
+    int exportPsiWithExperimental(const std::string &fileName);
+    inline static bool fileExists(const std::string &fileName){
+        struct stat buf;
+        return (stat(fileName.c_str(), &buf) != -1);
+    }
 
     /* Destructors */
     ~PBModel();
