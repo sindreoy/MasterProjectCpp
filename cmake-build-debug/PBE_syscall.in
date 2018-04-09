@@ -1,0 +1,40 @@
+# Dakota Input File: PBE_syscall.in
+# Usage:
+#    dakota -i PBE_syscall.in -o PBE_syscall.out > PBE_syscalle.stdout
+
+environment
+#    graphics
+    tabular_data
+        tabular_data_file = "PBE_opt_nls.dat"
+
+method
+    nl2sol
+        max_iterations = 500
+	convergence_tolerance = 1.e-8
+
+model
+    single
+
+variables
+    continuous_design = 4
+	initial_point   1.0	1.0	1.0	1.0
+	lower_bounds    0.0	0.0	0.0	0.0
+	upper_bounds    1.e1	1.e3	1.e1	1.e3
+	descriptors	"kb1"	"kb2"	"kc1"	"kc2"
+
+interface
+    analysis_drivers = "MasterProjectCpp"
+	fork
+	parameters_file = "params.in"
+	results_file	= "results.out"
+	file_tag #file_save
+
+responses
+    calibration_terms = 80
+#    no_gradients
+    no_hessians
+#    analytic_gradients
+    numerical_gradients
+#        method_source dakota
+#	 interval_type forward
+#	 fd_step_size = 1.e-5
