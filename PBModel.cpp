@@ -486,7 +486,7 @@ int PBModel::interpolateFv(const gsl_vector *x, const gsl_vector *y, const gsl_v
 int PBModel::timeIterate() {
     int flag = CVode(this->cvode_mem, this->tRequested, this->NPsi, &(this->tout), CV_NORMAL);
     if(checkFlag(&flag, "CVode", 1)) return 1;
-    std::cout << "time requested: " << this->tRequested << ", time produced: " << this->tout << std::endl;
+//    std::cout << "time requested: " << this->tRequested << ", time produced: " << this->tout << std::endl;
     return 0;
 }
 
@@ -525,7 +525,7 @@ int PBModel::solvePBE(){
         gsl_vector_view fvSimi = gsl_matrix_row(this->fvSim, i);
         interpolateFv(tmpR, &tmpPsii.vector, this->r, &fvSimi.vector);
     }
-    this->printFvSimulated();
+//    this->printFvSimulated();
     gsl_matrix_free(tmpPsi);
     gsl_vector_free(tmpR);
     return 0;
@@ -659,7 +659,7 @@ void PBModel::printTau(){
 
 
 /* Exporter methods */
-int PBModel::exportFvSimulated(const std::string &fileName) {
+int PBModel::exportFvSimulatedWithExperimental(const std::string &fileName) {
     if (fileExists(fileName)) {return 1;} /* fileExists declared inline in header */
     size_t i = 0, j = 0;
     std::ofstream outfile;
@@ -671,6 +671,9 @@ int PBModel::exportFvSimulated(const std::string &fileName) {
         for (j = 0; j < this->M; j++) {
             outfile << gsl_matrix_get(this->fvSim, j, i) << ",";
         }
+        for (j = 0; j < this->M; j++){
+            outfile << gsl_matrix_get(this->fv, j, i) << ",";
+        }
         outfile << std::endl;
     }
     outfile.close();
@@ -679,7 +682,7 @@ int PBModel::exportFvSimulated(const std::string &fileName) {
 
 int PBModel::exportPsiWithExperimental(const std::string &fileName) {
     if (fileExists(fileName)) { return 1; } /* fileExists declared inline in header */
-    // TODO: Create this method by interpolating back onto measured radii and export both as in exportFvSimulated
+    // TODO: Create this method by interpolating back onto measured radii and export both as in exportFvSimulatedWithExperimental
     return 0;
 }
 

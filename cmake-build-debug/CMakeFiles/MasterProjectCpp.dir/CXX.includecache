@@ -139,6 +139,8 @@ SystemProperties.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h
 
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.cpp
+gsl/gsl_vector_double.h
+-
 PBModel.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.h
 
@@ -147,11 +149,15 @@ cmath
 -
 ostream
 -
+fstream
+-
 cstdio
 -
 cstdlib
 -
 cstring
+-
+sys/stat.h
 -
 sundials/sundials_math.h
 -
@@ -194,6 +200,8 @@ Fluid.h
 
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/main.cpp
 iostream
+-
+vector
 -
 PBModel.h
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.h

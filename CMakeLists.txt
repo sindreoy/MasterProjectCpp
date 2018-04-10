@@ -3,6 +3,15 @@ project(MasterProjectCpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
+set(programs main testSolution)
+set(programs_dependencies
+        cmake-build-debug/crudeB.csv
+        Fluid.cpp Fluid.h
+        SystemProperties.cpp SystemProperties.h
+        Grid.cpp Grid.h
+        Kernels.cpp Kernels.h
+        PBModel.cpp PBModel.h
+        )
 
 ############################# SUNDIALS #############################
 # Specify path to SUNDIALS header files
@@ -60,13 +69,33 @@ FIND_LIBRARY(GSL_CBLAS
 # List of GSL libraries
 SET(GSL_LIBS ${GSL_LIBRARY} ${GSL_CBLAS})
 ##################################################################################
-add_executable(MasterProjectCpp
-        cmake-build-debug/crudeB.csv
-        main.cpp
-        Fluid.cpp Fluid.h
-        SystemProperties.cpp SystemProperties.h
-        Grid.cpp Grid.h
-        Kernels.cpp Kernels.h
-        PBModel.cpp PBModel.h)
+FOREACH(program ${programs})
 
-TARGET_LINK_LIBRARIES(MasterProjectCpp ${SUNDIALS_LIBS} ${GSL_LIBS})
+        # example source files
+        ADD_EXECUTABLE(${program} ${program}.cpp ${programs_dependencies})
+
+        # libraries to link against
+        TARGET_LINK_LIBRARIES(${program} ${SUNDIALS_LIBS} ${GSL_LIBS})
+
+    ENDFOREACH(program ${programs})
+#add_executable(MasterProjectCpp
+##        cmake-build-debug/crudeB.csv
+##        main.cpp
+##        Fluid.cpp Fluid.h
+##        SystemProperties.cpp SystemProperties.h
+##        Grid.cpp Grid.h
+##        Kernels.cpp Kernels.h
+##        PBModel.cpp PBModel.h
+##        )
+##TARGET_LINK_LIBRARIES(MasterProjectCpp ${SUNDIALS_LIBS} ${GSL_LIBS})
+##
+##add_executable(testSolution
+##        cmake-build-debug/crudeB.csv
+##        testSolution.cpp
+##        Fluid.cpp Fluid.h
+##        SystemProperties.cpp SystemProperties.h
+##        Grid.cpp Grid.h
+##        Kernels.cpp Kernels.h
+##        PBModel.cpp PBModel.h
+##        )
+##TARGET_LINK_LIBRARIES(testSolution ${SUNDIALS_LIBS} ${GSL_LIBS})

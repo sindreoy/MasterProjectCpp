@@ -124,7 +124,7 @@ public:
 
 
     /* Exporter methods */
-    int exportFvSimulated(const std::string &fileName);
+    int exportFvSimulatedWithExperimental(const std::string &fileName);
     int exportPsiWithExperimental(const std::string &fileName);
     inline static bool fileExists(const std::string &fileName){
         struct stat buf;
