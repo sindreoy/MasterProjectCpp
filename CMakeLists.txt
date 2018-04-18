@@ -3,9 +3,10 @@ project(MasterProjectCpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(programs main testSolution)
+set(programs main testSolution testLogNormalInitialCondition)
 set(programs_dependencies
         cmake-build-debug/crudeB.csv
+        results/raw_logNormal3.txt
         Fluid.cpp Fluid.h
         SystemProperties.cpp SystemProperties.h
         Grid.cpp Grid.h
