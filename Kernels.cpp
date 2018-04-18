@@ -47,7 +47,7 @@ void Kernels::setBreakageKernels() {
     xi = grid.getXi();
     xipBB = grid.getXipBB();
 
-    for (i = 0; i < N; i++){
+    for (i = 1; i < N; i++){
         xi_i = gsl_vector_get(xi, i);
 
         /* Death breakage */
@@ -55,7 +55,7 @@ void Kernels::setBreakageKernels() {
                        this->k1
                        *1/SUNRpowerR(xi_i, (realtype) 2.0/3.0)
                        *SUNRexp(-this->k2/SUNRpowerR(xi_i, (realtype) 5.0/3.0)));
-        for (j = 0; j < N; j++){
+        for (j = 1; j < N; j++){
             xipBBij = gsl_matrix_get(xipBB, i, j);
 
             /* Birth breakage */
@@ -72,9 +72,9 @@ void Kernels::setBreakageKernels() {
             );
         }
     }
-    /* Set first value to 0, to avoid NaN */
-    gsl_vector_set(KDB, 0, 0);
-    gsl_matrix_set(KBB, 0, 0, 0);
+//    /* Set first value to 0, to avoid NaN */
+//    gsl_vector_set(KDB, 0, 0);
+//    gsl_matrix_set(KBB, 0, 0, 0);
 }
 
 void Kernels::setCoalescenceKernels() {
@@ -86,9 +86,9 @@ void Kernels::setCoalescenceKernels() {
     gsl_matrix *xippBC  = grid.getXippBC();
 
     N  = grid.getN();
-    for (i = 0; i < N; i++){
+    for (i = 1; i < N; i++){
         xi_i = gsl_vector_get(xi, i);
-        for (j = 0; j < N; j++){
+        for (j = 1; j < N; j++){
             xi_j     = gsl_vector_get(xi, j);
             xipBCij  = gsl_matrix_get(xipBC, i, j);
             xippBCij = gsl_matrix_get(xippBC, i, j);
@@ -317,7 +317,6 @@ std::ostream& operator<<(std::ostream &os, const Kernels &kernels) {
 }
 
 Kernels::~Kernels() {
-    std::cout << "Destroying kernels" << std::endl;
     gsl_vector_free(this->KDB);
     gsl_matrix_free(this->KBB);
     gsl_matrix_free(this->KBC);
