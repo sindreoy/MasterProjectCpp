@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
     const std::string outName = "output1.dat";  /* Output filename          */
     realtype kb1 = x[0]     ,                   /* Model fitted parameters  */
              kb2 = x[1]     ,
-             kc1 = x[2]*kb1 ,
+             kc1 = x[2] ,
              kc2 = x[3];
     /* x[2] is actually the ratio kc1/kb1. kc1 = kb1*x[2] */
 
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
     Fluid cont = Fluid(1.0e3, 1, 1);                /* Water    */
     SystemProperties s = SystemProperties(500.0e-6, 725.0e-6, 0.366, disp);
     /* Solution class */
-    PBModel m = PBModel(fileName, kb1, kb2, kc1, kc2, g, s, cont, disp);
+    PBModel m = PBModel(fileName, kb1, kb2, kc1, kc2, g, s, cont, disp, 0);
     m.solvePBE();
 //    m.exportFvSimulatedWithExperimental(outName);
 
@@ -123,13 +123,40 @@ int main(int argc, char **argv) {
 
     /** Evaluate residuals for t = tf (end of time horizon) **/
     size_t M = m.getM(), N = m.getN();
-    realtype currentRes = 0;
-    for (i = 0; i < N; i++){
-        if (ASV[i] & 1) {
-            currentRes = m.getResidualij(M - 1, i);
-            fout << "                     " << currentRes << " f" << i+1 << std::endl;
+    double currentRes = 0;
+//    if (!m.checkMassBalance()){
+//        for (i = 0; i < N; i++){
+//            if (ASV[i] & 1) {
+//                fout << "                     " << 1.e30 << " f" << i + 1 << std::endl;
+//            }
+//        }
+//    } else {
+//        for (i = 0; i < M; i++) {
+//            for (j = 0; j < N; j++) {
+//                currentRes = m.getResidualij((size_t) round(i*M/M), j);
+//                fout << "                     " << currentRes << " f" << i * N + j + 1 << std::endl;
+//            }
+//        }
+//    }
+        for (i = 0; i < N; i++) {
+            if (ASV[i] & 1) {
+                currentRes = m.getResidualij((size_t) round(M / 3.0), i);
+                fout << "                     " << currentRes << " f" << i + 1 << std::endl;
+            }
         }
-    }
+        for (i = 0; i < N; i++) {
+            if (ASV[i] & 1) {
+                currentRes = m.getResidualij((size_t) round(2.0 * M / 3.0), i);
+                fout << "                     " << currentRes << " f" << 2 * N + i + 1 << std::endl;
+            }
+        }
+        for (i = 0; i < N; i++) {
+            if (ASV[i] & 1) {
+                currentRes = m.getResidualij(M - 1, i);
+                fout << "                     " << currentRes << " f" << 3*N + i + 1 << std::endl;
+            }
+        }
+//    }
     fout.flush();
     fout.close();
     return 0;
