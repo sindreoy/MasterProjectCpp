@@ -31,5 +31,4 @@ std::ostream &operator<<(std::ostream &os, const Fluid &fluid) {
 
 /* Destructors */
 Fluid::~Fluid(){
-    std::cout << "Destroying fluid" << std::endl;
 }

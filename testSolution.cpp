@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+#include <ctime>
 
 /* User-defined header files */
 #include "PBModel.h"
@@ -23,12 +25,14 @@ int main() {
     /*****************************************************************************************/
     const size_t Np = 200;                      /* Number of grid points    */
     char const *fileName = "crudeB.csv";        /* Experimental data        */
-    const std::string outName = "output1.dat";  /* Output filename          */
-    realtype kb1 = 2.6426477281e-07,            /* Model fitted parameters  */
-            kb2 = 0,
-            kc1 = 1.0138643992e+00*kb1,
-            kc2 = 1.6791362386e-01;
-
+//    realtype kb1 = 2.6426477281e-07,          /* Model fitted parameters  */
+//            kb2 = 0,
+//            kc1 = 1.0138643992e+00*kb1,
+//            kc2 = 1.6791362386e-01;
+    realtype kb1 = 1.e-6,
+            kb2 = 1.e-3,
+            kc1 = 1.e-4,
+            kc2 = 3.e2;
     /*****************************************************************************************/
     /* Instantiation and solution                                                            */
     /*****************************************************************************************/
@@ -37,7 +41,12 @@ int main() {
     Fluid disp = Fluid(0.837e3, 22.0e-3, 16.88e-3); /* Oil      */
     Fluid cont = Fluid(1.0e3, 1, 1);                /* Water    */
     SystemProperties s = SystemProperties(500.0e-6, 725.0e-6, 0.366, disp);
-    PBModel m = PBModel(fileName, kb1, kb2, kc1, kc2, g, s, cont, disp);
+    PBModel m = PBModel(fileName, kb1, kb2, kc1, kc2, g, s, cont, disp, 0);
     m.solvePBE();
-    m.exportFvSimulatedWithExperimental(outName);
+    bool massConservation = m.checkMassBalance();
+    std::cout << "Mass balance conserved? " << massConservation << std::endl;
+    if (massConservation) {
+        m.exportFvSimulatedWithExperimental();
+    }
+    return 0;
 }

@@ -49,6 +49,4 @@ std::ostream &operator<<(std::ostream &os, const SystemProperties &properties) {
 }
 
 /* Destructors */
-SystemProperties::~SystemProperties(){
-    std::cout << "Destroying systemproperties" << std::endl;
-}
+SystemProperties::~SystemProperties(){}

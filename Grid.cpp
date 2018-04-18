@@ -407,5 +407,4 @@ Grid::~Grid(){
     gsl_matrix_free(this->xipBB);
     gsl_matrix_free(this->xipBC);
     gsl_matrix_free(this->xippBC);
-    std::cout << "Destroying grid" << std::endl;
 }
