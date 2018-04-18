@@ -11,6 +11,7 @@
 #include <cmath>
 #include <ostream>
 #include <fstream>
+#include <sstream>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -75,8 +76,8 @@ public:
     /* Constructors */
     PBModel();
     PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realtype kc2,
-            const Grid &g, const SystemProperties &s, const Fluid &cont, const Fluid &disp);
-
+            const Grid &g, const SystemProperties &s, const Fluid &cont, const Fluid &disp,
+            size_t decision);
 
     /* Helper methods */
     void getRowsAndCols();
@@ -85,6 +86,7 @@ public:
     int preparePsi();
     int prepareCVMemory(); /* Allocates memory for ODE solver and prepares it for solution */
     int checkFlag(void *flagvalue, const char *funcname, int opt);
+    bool checkMassBalance();
 
 
     /* Solver methods */
@@ -124,8 +126,10 @@ public:
 
 
     /* Exporter methods */
-    int exportFvSimulatedWithExperimental(const std::string &fileName);
-    int exportPsiWithExperimental(const std::string &fileName);
+    int exportFvSimulatedWithExperimental();
+    int exportFv();
+    int exportPsi();
+
     inline static bool fileExists(const std::string &fileName){
         struct stat buf;
         return (stat(fileName.c_str(), &buf) != -1);

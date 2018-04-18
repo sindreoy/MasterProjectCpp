@@ -3,6 +3,7 @@
 //
 
 #include <gsl/gsl_vector_double.h>
+#include <gsl/gsl_matrix.h>
 #include "PBModel.h"
 
 /* Constructors */
@@ -10,7 +11,8 @@ PBModel::PBModel() = default;
 
 PBModel::PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realtype kc2,
                  const Grid &g, const SystemProperties &s,
-                 const Fluid &cont, const Fluid &disp):
+                 const Fluid &cont, const Fluid &disp,
+                 size_t decision):
         filename(f), grid(g), sysProps(s), cont(cont), disp(disp), cvode_mem(nullptr),
         kerns(Kernels(kb1, kb2, kc1, kc2, 1, g, s, cont, disp)){
     int flag = 0;
@@ -30,12 +32,46 @@ PBModel::PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realty
 
     /* Set experimental data: r, t, fv and rescale */
     this->getDistributions();
+    if (decision) {
+        std::ifstream fin("../results/raw_logNormal3.txt");
+        std::string line;
+        getline(fin, line);
+        size_t i = 0;
+        while (getline(fin, line)){
+            i++;
+        }
+        gsl_vector_free(this->r);
+        this->r = gsl_vector_calloc(i);
+        gsl_matrix_free(this->fv);
+        this->fv = gsl_matrix_calloc(this->M, i);
+        gsl_matrix_free(this->fv);
+        this->fvSim = gsl_matrix_calloc(this->M, i);
+        fin.clear();
+        fin.seekg(0, fin.beg);
+        getline(fin, line);
+        realtype val1 = 0, val2 = 0;
+        size_t j = 0;
+        while (std::getline(fin, line)){
+            std::stringstream linestream(line);
+            linestream >> val1 >> val2;
+            gsl_vector_set(r, j, val1);
+            gsl_matrix_set(this->fv, 0, j, val2);
+            j++;
+        }
+        fin.close();
+        this->N = i;
+        gsl_vector_view fvj0 = gsl_matrix_row(this->fv, 0);
+        for (j = 1; j < this->M; j++){
+            gsl_vector_view fvjj = gsl_matrix_row(this->fv, j);
+            gsl_vector_memcpy(&fvjj.vector, &fvj0.vector);
+        }
+    }
+
     this->rescaleInitial();
 
     /* Set final time of experiment and update kernels */
     realtype tf = gsl_vector_get(this->t, this->M - 1);
     this->kerns.setTf(tf);
-
     /* Assign nondimensional time tau = t / tf */
     gsl_vector_memcpy(this->tau , this->t);
     gsl_vector_scale(this->tau, 1/this->kerns.getTf());
@@ -294,6 +330,25 @@ int PBModel::checkFlag(void *flagvalue, const char *funcname, int opt){
         return(1); }
 
     return(0);
+}
+
+bool PBModel::checkMassBalance() {
+    /* Only to be called after solvePBE method */
+    size_t i = 0;
+    realtype phaseFraction = 0;
+    realtype phasef = 0;
+    for (i = 0; i < this->M; i++){
+        gsl_vector_view psii = gsl_matrix_row(this->psi, i);
+        gsl_vector_view fvi  = gsl_matrix_row(this->fvSim, i);
+        gsl_blas_ddot(this->grid.getW(), &psii.vector, &phaseFraction);
+        gsl_blas_ddot(this->r, &fvi.vector, &phasef);
+        if ((realtype) SUNRabs(phaseFraction - PHI)/PHI * 100 > 5){
+            /* More than relative 5% deviation. Mass not conserved */
+            return false;
+        }
+    }
+    /* At no time the mass was not conserved --> mass was conserved, return true */
+    return true;
 }
 
 
@@ -659,12 +714,19 @@ void PBModel::printTau(){
 
 
 /* Exporter methods */
-int PBModel::exportFvSimulatedWithExperimental(const std::string &fileName) {
-    if (fileExists(fileName)) {return 1;} /* fileExists declared inline in header */
-    size_t i = 0, j = 0;
+int PBModel::exportFvSimulatedWithExperimental() {
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer,sizeof(buffer),"%d-%m-%Y-%I:%M:%S",timeinfo);
+    std::string str(buffer);
+    std::string outputFilename = "../results/pbe-" + str + ".dat";
     std::ofstream outfile;
 
-    outfile.open(fileName);
+    size_t i = 0, j = 0;
+    outfile.open(outputFilename);
     outfile << "#r,fv\n";
     for (i = 0; i < this->N; i++) {
         outfile << gsl_vector_get(this->r, i) << ",";
@@ -680,9 +742,67 @@ int PBModel::exportFvSimulatedWithExperimental(const std::string &fileName) {
     return 0;
 }
 
-int PBModel::exportPsiWithExperimental(const std::string &fileName) {
-    if (fileExists(fileName)) { return 1; } /* fileExists declared inline in header */
-    // TODO: Create this method by interpolating back onto measured radii and export both as in exportFvSimulatedWithExperimental
+int PBModel::exportFv(){
+    /* Create new matrix and vector to dimensionalize results */
+    gsl_matrix *tmpfv = gsl_matrix_alloc(this->M, this->grid.getN());
+    gsl_matrix_memcpy(tmpfv, psi);
+    gsl_matrix_scale(tmpfv, 1/this->sysProps.getRm());
+
+    gsl_vector *tmpr = gsl_vector_alloc(this->grid.getN());
+    gsl_vector_memcpy(tmpr, this->grid.getXi());
+    gsl_vector_scale(tmpr, this->sysProps.getRm());
+
+    /* Export to file */
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer,sizeof(buffer),"%d-%m-%Y-%I:%M:%S",timeinfo);
+    std::string str(buffer);
+    std::string outputFilename = "../results/pbe-" + str + ".dat";
+    std::ofstream outfile;
+
+    size_t i = 0, j = 0;
+    outfile.open(outputFilename);
+    outfile << "#r,fv\n";
+    for (i = 0; i < this->grid.getN(); i++) {
+        outfile << gsl_vector_get(tmpr, i) << ",";
+        for (j = 0; j < this->M; j++) {
+            outfile << gsl_matrix_get(tmpfv, j, i) << ",";
+        }
+        outfile << std::endl;
+    }
+    outfile.close();
+
+    /* Free temporary variables */
+    gsl_matrix_free(tmpfv);
+    gsl_vector_free(tmpr);
+    return 0;
+}
+
+int PBModel::exportPsi() {
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer,sizeof(buffer),"%d-%m-%Y-%I:%M:%S",timeinfo);
+    std::string str(buffer);
+    std::string outputFilename = "../results/pbe-" + str + ".dat";
+    std::ofstream outfile;
+
+    size_t i = 0, j = 0;
+    outfile.open(outputFilename);
+    outfile << "#xi,psi\n";
+    for (i = 0; i < this->grid.getN(); i++) {
+        outfile << gsl_vector_get(this->grid.getXi(), i) << ",";
+        for (j = 0; j < this->M; j++) {
+            outfile << gsl_matrix_get(this->psi, j, i) << ",";
+        }
+        outfile << std::endl;
+    }
+    outfile.close();
     return 0;
 }
 
