@@ -1,4 +1,5 @@
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles/rebuild_cache.dir
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles/testLogNormalInitialCondition.dir
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles/testSolution.dir
 /Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/CMakeFiles/main.dir

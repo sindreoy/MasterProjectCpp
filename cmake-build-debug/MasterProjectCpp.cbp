@@ -37,6 +37,54 @@
 					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
+			<Target title="testLogNormalInitialCondition">
+				<Option output="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/testLogNormalInitialCondition" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/Sindre/Sundials/instdir/include"/>
+					<Add directory="/Users/sindre/GSL/instdir/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 testLogNormalInitialCondition"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="testLogNormalInitialCondition/fast">
+				<Option output="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/testLogNormalInitialCondition" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/Sindre/Sundials/instdir/include"/>
+					<Add directory="/Users/sindre/GSL/instdir/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 testLogNormalInitialCondition/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
 			<Target title="testSolution">
 				<Option output="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/testSolution" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug"/>
@@ -135,51 +183,70 @@
 			</Target>
 		</Build>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.cpp">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Fluid.h">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Grid.cpp">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Grid.h">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Kernels.cpp">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/Kernels.h">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.cpp">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/PBModel.h">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.cpp">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/SystemProperties.h">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/cmake-build-debug/crudeB.csv">
+			<Option target="testLogNormalInitialCondition"/>
 			<Option target="testSolution"/>
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/main.cpp">
 			<Option target="main"/>
+		</Unit>
+		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/results/raw_logNormal3.txt">
+			<Option target="testLogNormalInitialCondition"/>
+			<Option target="testSolution"/>
+			<Option target="main"/>
+		</Unit>
+		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/testLogNormalInitialCondition.cpp">
+			<Option target="testLogNormalInitialCondition"/>
 		</Unit>
 		<Unit filename="/Users/sindre/Dropbox/CLion/Projects/MasterProjectCpp/testSolution.cpp">
 			<Option target="testSolution"/>
