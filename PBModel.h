@@ -96,6 +96,12 @@ public:
     int timeIterate();
     int solvePBE();
     realtype getResidualij(size_t i, size_t j);
+    double getModeledMean(size_t t);
+    double getExperimentalMean(size_t t);
+    realtype getResidualMean(size_t t);
+    double getWeightedResidual(size_t i, size_t j, double m, double s);
+    double getWeight(double x, double m, double s);
+
 
     /* Setter methods */
 
@@ -129,6 +135,8 @@ public:
     int exportFvSimulatedWithExperimental();
     int exportFv();
     int exportPsi();
+    int exportMeans();
+
 
     inline static bool fileExists(const std::string &fileName){
         struct stat buf;

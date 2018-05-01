@@ -33,7 +33,7 @@ PBModel::PBModel(char const *f, realtype kb1, realtype kb2, realtype kc1, realty
     /* Set experimental data: r, t, fv and rescale */
     this->getDistributions();
     if (decision) {
-        std::ifstream fin("../results/raw_logNormal3.txt");
+        std::ifstream fin("../results/raw_logNormal4.txt");
         std::string line;
         getline(fin, line);
         size_t i = 0;
@@ -395,6 +395,12 @@ int PBModel::getRHS(N_Vector y, N_Vector ydot){
     gsl_matrix *IDC = gsl_matrix_calloc(Np, Np);
     gsl_vector *B   = gsl_vector_calloc(Np);
     gsl_vector *C   = gsl_vector_calloc(Np);
+
+    /* Open two files to write B and C to file */
+    std::ofstream bin("../results/breakage.dat", std::fstream::app);
+    std::ofstream cin("../results/coalescence.dat", std::fstream::app);
+    bin << this->tRequested * gsl_vector_get(this->t, this->M-1) << "\t";
+    cin << this->tRequested / gsl_vector_get(this->t, this->M-1) << "\t";
     /* B = IBB*w - DB, C = IBC*w - IDC*w */
     /* ydot[i] = B[i] + C[i] */
     /* Loop over rows and columns and evaluate RHS */
@@ -475,9 +481,16 @@ int PBModel::getRHS(N_Vector y, N_Vector ydot){
                        -psii*(realtype)integralDC
         );
         ydotdata[i] = (realtype) (gsl_vector_get(B, i) + gsl_vector_get(C, i));
+
+        /* Write coalescence and breakage to file */
+        bin << gsl_vector_get(B, i) << "\t";
+        cin << gsl_vector_get(C, i) << "\t";
     }
     ydotdata[0] = 0;
-
+    bin << std::endl;
+    cin << std::endl;
+    bin.close();
+    cin.close();
     /* Free allocated memory that is only used in current scope */
     gsl_matrix_free(psipBB);
     gsl_matrix_free(psipBC);
@@ -548,6 +561,20 @@ int PBModel::timeIterate() {
 int PBModel::solvePBE(){
     size_t i = 0;
     int flag = 0;
+    /* Write breakage and coalescence contributions to file */
+    std::ofstream bin("../results/breakage.dat");
+    std::ofstream cin("../results/coalescence.dat");
+    bin << "xi\n";
+    cin << "xi\n";
+    for (i = 0; i < this->grid.getN(); i++){
+        bin << gsl_vector_get(this->grid.getXi(), i) << "\t";
+        cin << gsl_vector_get(this->grid.getXi(), i) << "\t";
+    }
+    bin << std::endl;
+    cin << std::endl;
+    bin.close();
+    cin.close();
+
     for (i = 1; i < this->M; i++){
         /* Request new return time for ODE solver */
         this->tRequested = gsl_vector_get(this->tau, i);
@@ -593,6 +620,49 @@ realtype PBModel::getResidualij(size_t i, size_t j){
     realtype fvSimVal = gsl_matrix_get(this->fvSim, i, j);
     realtype fvExpVal = gsl_matrix_get(this->fv, i, j);
     return (fvSimVal - fvExpVal);
+}
+
+double PBModel::getModeledMean(size_t t){
+    double s, rdfvsim, dr;
+    s = 0;
+    size_t i = 0;
+    for (i = 1; i < this->N; i++){
+        dr = gsl_vector_get(this->r, i) - gsl_vector_get(this->r, i-1);
+        rdfvsim = gsl_vector_get(this->r, i)
+                  * (gsl_matrix_get(this->fvSim, t, i-1) + gsl_matrix_get(this->fvSim, t, i));
+        s += dr * rdfvsim / 2;
+    }
+    return (s / PHI * 1.e6);
+}
+
+double PBModel::getExperimentalMean(size_t t) {
+    double s, rdfvsim, dr;
+    s = 0;
+    size_t i = 0;
+    for (i = 1; i < this->N; i++){
+        dr = gsl_vector_get(this->r, i) - gsl_vector_get(this->r, i-1);
+        rdfvsim = gsl_vector_get(this->r, i)
+                  * (gsl_matrix_get(this->fv, t, i-1) + gsl_matrix_get(this->fv, t, i));
+        s += dr * rdfvsim / 2;
+    }
+    return (s / PHI * 1.e6);
+}
+
+realtype PBModel::getResidualMean(size_t t){
+    /* t is time instant */
+    return (this->getModeledMean(t) - this->getExperimentalMean(t));
+}
+
+double PBModel::getWeightedResidual(size_t i, size_t j, double m, double s){
+    double x = gsl_vector_get(this->r, j);
+    double weight = this->getWeight(x, m, s);
+    return (this->getResidualij(i, j) * weight);
+
+    return 1.0;
+}
+
+double PBModel::getWeight(double x, double m, double s) {
+    return (1.0 / (1.0+exp((m-x)/s)));
 }
 
 /* Getter methods */
@@ -722,7 +792,7 @@ int PBModel::exportFvSimulatedWithExperimental() {
     timeinfo = localtime(&rawtime);
     strftime(buffer,sizeof(buffer),"%d-%m-%Y-%I:%M:%S",timeinfo);
     std::string str(buffer);
-    std::string outputFilename = "../results/pbe-" + str + ".dat";
+    std::string outputFilename = "../results/solutionFiles/pbe-" + str + ".dat";
     std::ofstream outfile;
 
     size_t i = 0, j = 0;
@@ -760,7 +830,7 @@ int PBModel::exportFv(){
     timeinfo = localtime(&rawtime);
     strftime(buffer,sizeof(buffer),"%d-%m-%Y-%I:%M:%S",timeinfo);
     std::string str(buffer);
-    std::string outputFilename = "../results/pbe-" + str + ".dat";
+    std::string outputFilename = "../results/solutionFiles/pbe-" + str + ".dat";
     std::ofstream outfile;
 
     size_t i = 0, j = 0;
@@ -789,7 +859,7 @@ int PBModel::exportPsi() {
     timeinfo = localtime(&rawtime);
     strftime(buffer,sizeof(buffer),"%d-%m-%Y-%I:%M:%S",timeinfo);
     std::string str(buffer);
-    std::string outputFilename = "../results/pbe-" + str + ".dat";
+    std::string outputFilename = "../results/solutionFiles/pbe-" + str + ".dat";
     std::ofstream outfile;
 
     size_t i = 0, j = 0;
@@ -803,6 +873,26 @@ int PBModel::exportPsi() {
         outfile << std::endl;
     }
     outfile.close();
+    return 0;
+}
+
+int PBModel::exportMeans(){
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer,sizeof(buffer),"%d-%m-%Y-%I:%M:%S",timeinfo);
+    std::string str(buffer);
+    std::string outputFilename = "../results/solutionFiles/means-" + str + ".dat";
+    std::ofstream outfile(outputFilename);
+    if (!outfile.good()) return 1;
+
+    outfile << "#modeled, experimental" << std::endl;
+    size_t t;
+    for (t = 0; t < this->M; t++){
+        outfile << this->getModeledMean(t) << "," << this->getExperimentalMean(t) << std::endl;
+    }
     return 0;
 }
 

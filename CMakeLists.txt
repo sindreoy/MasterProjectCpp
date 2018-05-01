@@ -3,7 +3,7 @@ project(MasterProjectCpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(programs main testSolution testLogNormalInitialCondition)
+set(programs main testSolution testLogNormalInitialCondition checkSensitivity chartMeanSSE)
 set(programs_dependencies
         cmake-build-debug/crudeB.csv
         results/raw_logNormal3.txt
@@ -78,7 +78,7 @@ FOREACH(program ${programs})
         # libraries to link against
         TARGET_LINK_LIBRARIES(${program} ${SUNDIALS_LIBS} ${GSL_LIBS})
 
-    ENDFOREACH(program ${programs})
+ENDFOREACH(program ${programs})
 #add_executable(MasterProjectCpp
 ##        cmake-build-debug/crudeB.csv
 ##        main.cpp
