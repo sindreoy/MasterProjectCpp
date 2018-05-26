@@ -28,6 +28,9 @@
 
 #include <gsl/gsl_spline.h>             /* Spline interpolation from GSL                    */
 #include <gsl/gsl_interp.h>             /* Interpolation header from GSL                    */
+#include <gsl/gsl_multifit_nlinear.h>   /* Non-linear multifit regression                   */
+#include <gsl/gsl_multimin.h>           /* Multidimensional minimization                    */
+#include <gsl/gsl_matrix.h>
 
 /* User-defined header files */
 #include "Kernels.h"                    /* Contains kernels, override to use other kernels  */
@@ -85,6 +88,7 @@ public:
     void rescaleInitial();
     int preparePsi();
     int prepareCVMemory(); /* Allocates memory for ODE solver and prepares it for solution */
+    int releaseCVMemory();
     int checkFlag(void *flagvalue, const char *funcname, int opt);
     bool checkMassBalance();
 
@@ -101,6 +105,16 @@ public:
     realtype getResidualMean(size_t t);
     double getWeightedResidual(size_t i, size_t j, double m, double s);
     double getWeight(double x, double m, double s);
+
+
+    /* Non-linear least squares parameter estimation */
+    int levenbergMarquardtCostFunction(const gsl_vector *x, gsl_vector *f);
+    int levenbergMarquardtParamEstimation();
+
+
+    /* Fletcher-Reeves constrained optimization (parameter estimation) */
+    double fletcherReevesCostFunction(const gsl_vector *v);
+    void fletcherReevesParamEstimation();
 
 
     /* Setter methods */
@@ -146,9 +160,50 @@ public:
     /* Destructors */
     ~PBModel();
 };
+/* CVode trick */
 inline int dydt(realtype t, N_Vector y, N_Vector ydot, void *user_data){
     PBModel *obj = static_cast<PBModel *> (user_data);
     int err = obj->getRHS(y, ydot);
+    return err;
+}
+
+/* Levenberg-Marquardt trick */
+inline int levenbergMarquardtGatewayCost(const gsl_vector *x, void *data, gsl_vector *f){
+    PBModel *obj = static_cast<PBModel *> (data);
+    int err = obj->levenbergMarquardtCostFunction(x, f);
+    return err;
+}
+inline void levenbergMarquardtCallback(const size_t iter, void *params,
+                                       const gsl_multifit_nlinear_workspace *w){
+    gsl_vector *f = gsl_multifit_nlinear_residual(w);
+    gsl_vector *x = gsl_multifit_nlinear_position(w);
+    gsl_matrix *J = gsl_multifit_nlinear_jac(w);
+    double rcond;
+
+    /* compute reciprocal condition number of J(x) */
+    gsl_multifit_nlinear_rcond(&rcond, w);
+
+    fprintf(stderr, "iter %2zu: kb1 = %.10g, kb2 = %.10g, kc1 = %.10g, kc2, = %.10g,"
+                    " cond(J) = %8.4f, |f(x)| = %.4f\n",
+            iter,
+            gsl_vector_get(x, 0),
+            gsl_vector_get(x, 1),
+            gsl_vector_get(x, 2),
+            gsl_vector_get(x, 3),
+            1.0 / rcond,
+            gsl_blas_dnrm2(f));
+//    for (size_t i = 0; i < J->size1; i++){
+//        for (size_t j = 0; j < J->size2; j++){
+//            fprintf(stderr, "%.2g\t", gsl_matrix_get(J, i, j));
+//        }
+//        fprintf(stderr, "\n");
+//    }
+}
+
+/* Fletcher-Reeves trick */
+inline double fletcherReevesGatewayCost(const gsl_vector *v, void *params){
+    PBModel *obj = static_cast<PBModel *> (params);
+    double err = obj->fletcherReevesCostFunction(v);
     return err;
 }
 #endif //MASTERPROJECTCPP_MODEL_H

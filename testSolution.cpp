@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <ctime>
+#include <gsl/gsl_vector_double.h>
 
 /* User-defined header files */
 #include "PBModel.h"
@@ -25,14 +26,12 @@ int main() {
     /*****************************************************************************************/
     const size_t Np = 200;                      /* Number of grid points    */
     char const *fileName = "crudeB.csv";        /* Experimental data        */
-//    realtype kb1 = 2.6426477281e-07,          /* Model fitted parameters  */
-//            kb2 = 0,
-//            kc1 = 1.0138643992e+00*kb1,
-//            kc2 = 1.6791362386e-01;
-    realtype kb1 = 1.e-6,
-            kb2 = 1.e-3,
+    realtype kb1 = 8.e-6,
+            kb2 = 2.e-4,
             kc1 = 1.e-4,
             kc2 = 3.e2;
+    kb1 = 4.6416e-05, kb2 = 4.6416e-04, kc1 = 1.e-3, kc2 = 227.592;
+    kb1*=1; kb2*=1; kc1*= 1; kc2*= 1;
     /*****************************************************************************************/
     /* Instantiation and solution                                                            */
     /*****************************************************************************************/
@@ -42,11 +41,8 @@ int main() {
     Fluid cont = Fluid(1.0e3, 1, 1);                /* Water    */
     SystemProperties s = SystemProperties(500.0e-6, 725.0e-6, 0.366, disp);
     PBModel m = PBModel(fileName, kb1, kb2, kc1, kc2, g, s, cont, disp, 0);
-    m.solvePBE();
-    bool massConservation = m.checkMassBalance();
-    std::cout << "Mass balance conserved? " << massConservation << std::endl;
-    if (massConservation) {
-        m.exportFvSimulatedWithExperimental();
-    }
+    m.levenbergMarquardtParamEstimation();
+//    m.solvePBE();
+//    m.exportFvSimulatedWithExperimental();
     return 0;
 }

@@ -138,25 +138,37 @@ int main(int argc, char **argv) {
 //            }
 //        }
 //    }
-        for (i = 0; i < N; i++) {
-            if (ASV[i] & 1) {
-                currentRes = m.getResidualij((size_t) round(M / 3.0), i);
-                fout << "                     " << currentRes << " f" << i + 1 << std::endl;
-            }
-        }
-        for (i = 0; i < N; i++) {
-            if (ASV[i] & 1) {
-                currentRes = m.getResidualij((size_t) round(2.0 * M / 3.0), i);
-                fout << "                     " << currentRes << " f" << 2 * N + i + 1 << std::endl;
-            }
-        }
-        for (i = 0; i < N; i++) {
-            if (ASV[i] & 1) {
-                currentRes = m.getResidualij(M - 1, i);
-                fout << "                     " << currentRes << " f" << 3*N + i + 1 << std::endl;
-            }
-        }
+//        for (i = 0; i < N; i++) {
+//            if (ASV[i] & 1) {
+//                currentRes = m.getResidualij((size_t) round(M / 3.0), i);
+//                fout << "                     " << currentRes << " f" << i + 1 << std::endl;
+//            }
+//        }
+//        for (i = 0; i < N; i++) {
+//            if (ASV[i] & 1) {
+//                currentRes = m.getResidualij((size_t) round(2.0 * M / 3.0), i);
+//                fout << "                     " << currentRes << " f" << 2 * N + i + 1 << std::endl;
+//            }
+//        }
+//        for (i = 0; i < N; i++) {
+//            if (ASV[i] & 1) {
+//                currentRes = m.getResidualij(M - 1, i);
+//                fout << "                     " << currentRes << " f" << 3*N + i + 1 << std::endl;
+//            }
+//        }
 //    }
+    if (!m.checkMassBalance()){
+        for (i = 0; i < M; i++){
+            fout << "                     " << 100 << " f" << i << std::endl;
+        }
+    } else {
+        for (i = 0; i < M; i++) {
+            if (ASV[i] & 1) {
+                currentRes = m.getResidualMean(i);
+                fout << "                     " << currentRes << " f" << i << std::endl;
+            }
+        }
+    }
     fout.flush();
     fout.close();
     return 0;

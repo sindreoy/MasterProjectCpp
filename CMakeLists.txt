@@ -3,7 +3,8 @@ project(MasterProjectCpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(programs main testSolution testLogNormalInitialCondition checkSensitivity chartMeanSSE)
+set(programs main testSolution testLogNormalInitialCondition checkSensitivity chartMeanSSE
+        bruteForceParamEstimation)
 set(programs_dependencies
         cmake-build-debug/crudeB.csv
         results/raw_logNormal3.txt
@@ -79,24 +80,3 @@ FOREACH(program ${programs})
         TARGET_LINK_LIBRARIES(${program} ${SUNDIALS_LIBS} ${GSL_LIBS})
 
 ENDFOREACH(program ${programs})
-#add_executable(MasterProjectCpp
-##        cmake-build-debug/crudeB.csv
-##        main.cpp
-##        Fluid.cpp Fluid.h
-##        SystemProperties.cpp SystemProperties.h
-##        Grid.cpp Grid.h
-##        Kernels.cpp Kernels.h
-##        PBModel.cpp PBModel.h
-##        )
-##TARGET_LINK_LIBRARIES(MasterProjectCpp ${SUNDIALS_LIBS} ${GSL_LIBS})
-##
-##add_executable(testSolution
-##        cmake-build-debug/crudeB.csv
-##        testSolution.cpp
-##        Fluid.cpp Fluid.h
-##        SystemProperties.cpp SystemProperties.h
-##        Grid.cpp Grid.h
-##        Kernels.cpp Kernels.h
-##        PBModel.cpp PBModel.h
-##        )
-##TARGET_LINK_LIBRARIES(testSolution ${SUNDIALS_LIBS} ${GSL_LIBS})
