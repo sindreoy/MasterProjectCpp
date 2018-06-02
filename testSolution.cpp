@@ -30,8 +30,29 @@ int main() {
             kb2 = 2.e-4,
             kc1 = 1.e-4,
             kc2 = 3.e2;
-    kb1 = 4.6416e-05, kb2 = 4.6416e-04, kc1 = 1.e-3, kc2 = 227.592;
-    kb1*=1; kb2*=1; kc1*= 1; kc2*= 1;
+//    /* Guess for parameter estimating residuals */
+    kb1 = 2.99e-5, kb2 = 5.556421e-4, kc1 = 5.57417e-4, kc2 = 227.596;
+//    kb1*=1; kb2*=1; kc1*= 1; kc2*= 1;
+
+    /* Guess for parameter estimating weighted residuals */
+//    kb1 = 7.1905e-05, kb2 = 8.01876e-4, kc1 = 7.46537e-4, kc2 = 151.12;
+
+    /* Guess for parameter estimating means */
+//    kb1 = 3.59381e-4, kb2 = 5.99484e-3, kc1 = 1.29155e-4, kc2 = 227.592;
+
+
+
+
+    /* Solve with parameters from optimizing residuals */
+////    kb1 = 3.99121e-05, kb2 = 0.000505857, kc1 = 0.00116999, kc2 = 312.743;  /* Coarse   */
+//    kb1 = 2.92088e-05, kb2 = 0.000601003, kc1 = 0.000573217, kc2 = 251.809; /* Refined  */
+
+    /* Solve with parameters from optimizing weighted residuals */
+    kb1 = 4.22981e-05, kb2 = 0.000631455, kc1 = 0.000881273, kc2 = 262.607; /* Refined, coarse are same as SSE */
+
+    /* Solve with parameters from optimizing means */
+////    kb1 = 0.00035419, kb2=0.00611499, kc1=0.000122041, kc2=232.589;     /* Coarse   */
+//    kb1=0.000248857,kb2=	0.00496479,kc1=	6.58189e-05,kc2=31.9293;    /* Refined  */
     /*****************************************************************************************/
     /* Instantiation and solution                                                            */
     /*****************************************************************************************/
@@ -41,8 +62,10 @@ int main() {
     Fluid cont = Fluid(1.0e3, 1, 1);                /* Water    */
     SystemProperties s = SystemProperties(500.0e-6, 725.0e-6, 0.366, disp);
     PBModel m = PBModel(fileName, kb1, kb2, kc1, kc2, g, s, cont, disp, 0);
-    m.levenbergMarquardtParamEstimation();
-//    m.solvePBE();
-//    m.exportFvSimulatedWithExperimental();
+//    m.paramesterEstimationSSE();
+//    m.parameterEstimationMean();
+    m.solvePBE();
+    m.exportFvSimulatedWithExperimental();
+//    m.exportMeans();
     return 0;
 }

@@ -28,7 +28,7 @@ int main() {
     /*****************************************************************************************/
     /* Declaration of variables                                                              */
     /*****************************************************************************************/
-    const size_t Np = 150;                      /* Number of grid points    */
+    const size_t Np = 180;                      /* Number of grid points    */
     char const *fileName = "crudeB.csv";        /* Experimental data        */
     realtype kb1 = 7.e-6,   /* From testLogNormalInitialCondition.cpp */
             kb2 = 2.e-4,    /* From testLogNormalInitialCondition.cpp */
@@ -50,11 +50,14 @@ int main() {
     std::vector<realtype> kc2vec(Npts, 0);
 
     /* Set search space */
-    //TODO: Set kb2lb to 1.e-4. Nothing good comes from 1.e-5
-    realtype kb1lb = log10(1.e-7), kb1ub = log10(1.e-4);
-    realtype kb2lb = log10(1.e-5), kb2ub = log10(1.e0);
-    realtype kc1lb = log10(1.e-7), kc1ub = log10(1.e-4);
-    realtype kc2lb = log10(1.e-2), kc2ub = log10(4.e3);
+//    realtype kb1lb = log10(1.e-7), kb1ub = log10(1.e-4);
+//    realtype kb2lb = log10(1.e-5), kb2ub = log10(1.e0);
+//    realtype kc1lb = log10(1.e-7), kc1ub = log10(1.e-4);
+//    realtype kc2lb = log10(1.e-2), kc2ub = log10(4.e3);
+    realtype kb1lb = log10(2.15e-6), kb1ub = log10(1.e-3);
+    realtype kb2lb = log10(1.29e-4), kb2ub = log10(2.15e-2);
+    realtype kc1lb = log10(1.67e-5), kc1ub = log10(1.e-3);
+    realtype kc2lb = log10(12.95), kc2ub = log10(4.e3);
 
     size_t i, j, q, r, v, w;
     for (i = 0; i < Npts; i++){

@@ -705,23 +705,26 @@ int PBModel::levenbergMarquardtCostFunction(const gsl_vector *x, gsl_vector *f) 
         gsl_vector_set(f, idx, this->getResidualij(M-1, j));
     }
     return GSL_SUCCESS;
-//    size_t times = f->size / this->N;
-//    for (i = 1; i <= times; i++){
-//        for (j = 0; j < this->N; j++){
-//            size_t row = (size_t) round(i*this->M / times);
-//            if (row == this->M) row--;
-//            size_t idx = (i-1)*this->N + j;
-//            gsl_vector_set(f, idx, this->getResidualij(row, j));
-//        }
-//    }
-//    return GSL_SUCCESS;
 }
 
-int PBModel::levenbergMarquardtParamEstimation() {
+int PBModel::costFunctionMean(const gsl_vector *x, gsl_vector *f){
+    double kb1 = gsl_vector_get(x, 0) / 1.e4;
+    double kb2 = gsl_vector_get(x, 1) / 1.e3;
+    double kc1 = gsl_vector_get(x, 2) / 1.e5;
+    double kc2 = gsl_vector_get(x, 3) / 1.e-1;
+    this->kerns.setNewKs(kb1, kb2, kc1, kc2);
+    this->solvePBE();
+    size_t i = 0;
+    size_t nRes = f->size; /* Number of residual means */
+    for (i = 0; i < nRes; i++){
+        gsl_vector_set(f, i, this->getResidualMean(i));
+    }
+    return GSL_SUCCESS;
+}
 
-
-    const size_t Ntmin = 80;    /* Minimum number of distributions chosen   */
-    const size_t Ntmax = 80;    /* Maximum number of distributions chosen   */
+int PBModel::paramesterEstimationSSE() {
+    const size_t Ntmin = 60;    /* Minimum number of distributions chosen   */
+    const size_t Ntmax = 81;    /* Maximum number of distributions chosen   */
     size_t Nt = Ntmin;          /* Number of distributions chosen           */
     const size_t p = 4;         /* Number of parameters                     */
     do {
@@ -755,7 +758,7 @@ int PBModel::levenbergMarquardtParamEstimation() {
         const double ftol = 1.e-4;
 
         /* define the function to be minimized */
-        fdf.f = levenbergMarquardtGatewayCost;
+        fdf.f = gatewayCostSSE;
         fdf.df = NULL;      /* set to NULL for finite-difference Jacobian */
         fdf.fvv = NULL;     /* not using geodesic acceleration */
         fdf.n = n;
@@ -774,7 +777,7 @@ int PBModel::levenbergMarquardtParamEstimation() {
 
         /* solve the system with a maximum of 200 iterations */
         status = gsl_multifit_nlinear_driver(200, xtol, gtol, ftol,
-                                             levenbergMarquardtCallback, NULL, &info, w);
+                                             paramEstimationCallbackSSE, NULL, &info, w);
 
         /* compute covariance of best fit parameters */
         J = gsl_multifit_nlinear_jac(w);
@@ -844,53 +847,167 @@ int PBModel::levenbergMarquardtParamEstimation() {
     return 0;
 }
 
+int PBModel::parameterEstimationMean() {
+    const size_t N = this->M;
+    const size_t p = 4;
+    const size_t n = N;
 
-/* Fletcher-Reeves constrained optimization (parameter estimation) */
-double PBModel::fletcherReevesCostFunction(const gsl_vector *v) {
-    realtype kb1 = gsl_vector_get(v, 0);
-    realtype kb2 = gsl_vector_get(v, 1);
-    realtype kc1 = gsl_vector_get(v, 2);
-    realtype kc2 = gsl_vector_get(v, 3);
-    this->kerns.setNewKs(kb1, kb2, kc1, kc2);
-    this->solvePBE();
-    double result = 0;
-    size_t i = 0, j = 0;
-    for (i = 0; i < this->M; i++){
-        for (j = 0; j < this->N; j++){
-            result += pow(this->getResidualij(i, j), 2);
-        }
+    const gsl_multifit_nlinear_type *T = gsl_multifit_nlinear_trust;
+    gsl_multifit_nlinear_workspace *w;
+    gsl_multifit_nlinear_fdf fdf;
+    gsl_multifit_nlinear_parameters fdf_params =
+            gsl_multifit_nlinear_default_parameters();
+    fdf_params.h_df = 1.e-2;
+
+    gsl_vector *f;  /* Function */
+    gsl_matrix *J;  /* Jacobian */
+    gsl_matrix *covar = gsl_matrix_alloc(p, p);
+
+    PBModel *d = this;
+    /* starting values */
+    double x1_scaling = 1.e4, x2_scaling = 1.e3, x3_scaling = 1.e5, x4_scaling = 1.e-1;
+    double x_init[4] = {this->kerns.getKb1() * x1_scaling, this->kerns.getKb2() * x2_scaling,
+                        this->kerns.getKc1() * x3_scaling, this->kerns.getKc2() * x4_scaling};
+    gsl_vector_view x = gsl_vector_view_array(x_init, p);
+    double chisq, chisq0;
+    int status, info;
+
+    const double xtol = 1e-8;
+    const double gtol = 1e-8;
+    const double ftol = 1.e-4;
+
+    /* define the function to be minimized */
+    fdf.f = gatewayCostMean;
+    fdf.df = NULL;      /* set to NULL for finite-difference Jacobian */
+    fdf.fvv = NULL;     /* not using geodesic acceleration */
+    fdf.n = n;
+    fdf.p = p;
+    fdf.params = d;
+
+    /* allocate workspace with default parameters */
+    w = gsl_multifit_nlinear_alloc(T, &fdf_params, n, p);
+
+    /* initialize solver with starting point and weights */
+    gsl_multifit_nlinear_init(&x.vector, &fdf, w);
+
+    /* compute initial cost function */
+    f = gsl_multifit_nlinear_residual(w);
+    gsl_blas_ddot(f, f, &chisq0);
+
+    /* solve the system with a maximum of 200 iterations */
+    status = gsl_multifit_nlinear_driver(200, xtol, gtol, ftol,
+                                         paramEstimationCallbackMean, NULL, &info, w);
+
+    /* compute covariance of best fit parameters */
+    J = gsl_multifit_nlinear_jac(w);
+    gsl_multifit_nlinear_covar(J, 0.0, covar);
+
+    /* compute final cost */
+    gsl_blas_ddot(f, f, &chisq);
+
+#define FIT(i) gsl_vector_get(w->x, i)
+#define ERR(i) sqrt(gsl_matrix_get(covar,i,i))
+
+    time_t rawtime;
+    struct tm *timeinfo;
+    char buffer[80];
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "%d-%m-%Y-%I:%M:%S", timeinfo);
+    std::string str(buffer);
+    std::string outputFilename = "../results/parameterEstimation/means_all_dists" + str + ".dat";
+    std::ofstream outfile;
+    outfile.open(outputFilename);
+
+    fprintf(stderr, "summary from method '%s/%s'\n",
+            gsl_multifit_nlinear_name(w),
+            gsl_multifit_nlinear_trs_name(w));
+    fprintf(stderr, "number of iterations: %zu\n",
+            gsl_multifit_nlinear_niter(w));
+    fprintf(stderr, "function evaluations: %zu\n", fdf.nevalf);
+    fprintf(stderr, "Jacobian evaluations: %zu\n", fdf.nevaldf);
+    fprintf(stderr, "reason for stopping: %s\n",
+            (info == 1) ? "small step size" : "small gradient");
+    fprintf(stderr, "initial |f(x)| = %f\n", sqrt(chisq0));
+    fprintf(stderr, "final   |f(x)| = %f\n", sqrt(chisq));
+
+    {
+        double dof = n - p;
+        double c = GSL_MAX_DBL(1, sqrt(chisq / dof));
+
+        fprintf(stderr, "chisq/dof = %g\n", chisq / dof);
+
+        fprintf(stderr, "kb1      = %.3g +/- %.3g\n", FIT(0), c * ERR(0));
+        fprintf(stderr, "kb2      = %.3g +/- %.3g\n", FIT(1), c * ERR(1));
+        fprintf(stderr, "kc1      = %.3g +/- %.3g\n", FIT(2), c * ERR(2));
+        fprintf(stderr, "kc2      = %.3g +/- %.3g\n", FIT(3), c * ERR(3));
+
+        outfile << "#kb1,kb2,kc1,kc2,kb10,kb20,kc10,kc20,chisq/dof,initial,final,iter\n";
+        outfile << FIT(0) / x1_scaling << "," << FIT(1) / x2_scaling
+                << "," << FIT(2) / x3_scaling << "," << FIT(3) / x4_scaling
+                << "," << x_init[0] / x1_scaling << "," << x_init[1] / x2_scaling
+                << "," << x_init[2] / x3_scaling << "," << x_init[3] / x4_scaling
+                << "," << chisq / dof << ","
+                << "," << sqrt(chisq0) << "," << sqrt(chisq)
+                << "," << gsl_multifit_nlinear_niter(w) << "\n";
+        outfile << c * ERR(0) / x1_scaling << "," << c * ERR(1) / x2_scaling
+                << "," << c * ERR(2) / x3_scaling << "," << c * ERR(3) / x4_scaling << "\n";
+        outfile << fdf_params.h_df << "\n";
     }
-    return result;
+    outfile.close();
+    fprintf(stderr, "status = %s\n", gsl_strerror(status));
+
+    gsl_multifit_nlinear_free(w);
+    gsl_matrix_free(covar);
+    return 0;
 }
-void PBModel::fletcherReevesParamEstimation(){
-    size_t iter = 0;
-    int status;
 
-    const gsl_multimin_fdfminimizer_type *T;
-    gsl_multimin_fdfminimizer *s;
-
-    PBModel *m = this;
-
-    gsl_vector *x;
-    gsl_multimin_function_fdf func;
-    func.n = 4;
-    func.f = fletcherReevesGatewayCost;
-    func.df = NULL;
-    func.fdf = NULL;
-    func.params = m;
-
-    /* Starting point */
-    x = gsl_vector_alloc(4);
-    double x_init[4] = { this->kerns.getKb1(), this->kerns.getKb2(),
-                         this->kerns.getKc1(), this->kerns.getKc2() };
-    gsl_vector_set(x, 0, this->kerns.getKb1());
-    gsl_vector_set(x, 1, this->kerns.getKb2());
-    gsl_vector_set(x, 2, this->kerns.getKc1());
-    gsl_vector_set(x, 3, this->kerns.getKc2());
-
-    T = gsl_multimin_fdfminimizer_conjugate_fr;
-    s = gsl_multimin_fdfminimizer_alloc (T, 4);
-}
+///* Fletcher-Reeves constrained optimization (parameter estimation) */
+//double PBModel::fletcherReevesCostFunction(const gsl_vector *v) {
+//    realtype kb1 = gsl_vector_get(v, 0);
+//    realtype kb2 = gsl_vector_get(v, 1);
+//    realtype kc1 = gsl_vector_get(v, 2);
+//    realtype kc2 = gsl_vector_get(v, 3);
+//    this->kerns.setNewKs(kb1, kb2, kc1, kc2);
+//    this->solvePBE();
+//    double result = 0;
+//    size_t i = 0, j = 0;
+//    for (i = 0; i < this->M; i++){
+//        for (j = 0; j < this->N; j++){
+//            result += pow(this->getResidualij(i, j), 2);
+//        }
+//    }
+//    return result;
+//}
+//void PBModel::fletcherReevesParamEstimation(){
+//    size_t iter = 0;
+//    int status;
+//
+//    const gsl_multimin_fdfminimizer_type *T;
+//    gsl_multimin_fdfminimizer *s;
+//
+//    PBModel *m = this;
+//
+//    gsl_vector *x;
+//    gsl_multimin_function_fdf func;
+//    func.n = 4;
+//    func.f = fletcherReevesGatewayCost;
+//    func.df = NULL;
+//    func.fdf = NULL;
+//    func.params = m;
+//
+//    /* Starting point */
+//    x = gsl_vector_alloc(4);
+//    double x_init[4] = { this->kerns.getKb1(), this->kerns.getKb2(),
+//                         this->kerns.getKc1(), this->kerns.getKc2() };
+//    gsl_vector_set(x, 0, this->kerns.getKb1());
+//    gsl_vector_set(x, 1, this->kerns.getKb2());
+//    gsl_vector_set(x, 2, this->kerns.getKc1());
+//    gsl_vector_set(x, 3, this->kerns.getKc2());
+//
+//    T = gsl_multimin_fdfminimizer_conjugate_fr;
+//    s = gsl_multimin_fdfminimizer_alloc (T, 4);
+//}
 
 /* Getter methods */
 gsl_matrix *PBModel::getFv() const {
@@ -1137,3 +1254,5 @@ PBModel::~PBModel(){
     NV_DATA_S(this->NPsi) = nullptr;
     N_VDestroy_Serial(this->NPsi);
 }
+
+
